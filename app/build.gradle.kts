@@ -1,9 +1,8 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
-
-    // ✅ Plugin requerido desde Kotlin 2.0
-    id("org.jetbrains.kotlin.plugin.compose") version "2.0.21"
+    alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.ksp)
 }
 
 android {
@@ -52,11 +51,8 @@ dependencies {
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
     implementation(libs.ads.mobile.sdk)
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
 
-    // ✅ Jetpack Compose moderno (solo una versión)
+    // ✅ Jetpack Compose moderno
     implementation("androidx.compose.ui:ui:1.7.5")
     implementation("androidx.compose.material3:material3:1.3.0")
     implementation("androidx.compose.ui:ui-tooling-preview:1.7.5")
@@ -64,6 +60,19 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.6")
 
     debugImplementation("androidx.compose.ui:ui-tooling:1.7.5")
-    // ✅ Íconos de Compose
     implementation("androidx.compose.material:material-icons-extended:1.7.5")
+
+    // ✅ ROOM (usa versión moderna con KSP)
+    val room_version = "2.8.1"
+    implementation("androidx.room:room-runtime:$room_version")
+    implementation("androidx.room:room-ktx:$room_version")
+    ksp("androidx.room:room-compiler:$room_version")
+
+    // ✅ (opcional) helpers de test
+    testImplementation("androidx.room:room-testing:$room_version")
+
+    // ✅ Tests
+    testImplementation(libs.junit)
+    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.espresso.core)
 }

@@ -1,7 +1,5 @@
 package Screens
 
-
-
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -42,7 +40,13 @@ fun ProductList(products: List<Product>, isClientView: Boolean, onAddToCart: (Pr
                         Column {
                             Text(product.name, style = MaterialTheme.typography.titleMedium)
                             Text("$${product.price}", style = MaterialTheme.typography.bodyMedium)
-                            // TODO: Mostrar la categoría aquí
+
+                            // AHORA MOSTRAMOS LA CATEGORÍA
+                            Text(
+                                "Categoría: ${product.category.name.capitalize()}",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
                         }
                         // El botón "Agregar" solo se muestra en la vista del cliente
                         if (isClientView) {

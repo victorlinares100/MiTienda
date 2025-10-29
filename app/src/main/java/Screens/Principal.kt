@@ -84,9 +84,8 @@ fun TiendaApp(viewModel: ProductViewModel) {
                             ClientScreenRoute.CART -> ClientCartScreen(viewModel)
                         }
                     }
-                    null -> { /* Nunca debería ocurrir aquí */ }
+                    null -> {} }
                 }
             }
         }
     }
-}

@@ -1,15 +1,22 @@
 package com.example.mitienda
 
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+
 // NUEVO: Definición de las categorías
 enum class ProductCategory {
     INVIERNO,
     VERANO,
     GIMNASIO,
-    OTRO // Opcional: para productos que no encajan
+    OTRO
 }
 
+// CAMBIO: Se añade @Entity y @PrimaryKey
+@Entity(tableName = "producto")
 data class Product(
-    val id: Int,
+    // CAMBIO: Se añade PrimaryKey con autoGenerate para que Room maneje las IDs
+    @PrimaryKey(autoGenerate = true)
+    val id: Int = 0, // Se inicializa a 0 para que Room lo autogenere
     val name: String,
     val price: Double,
     val category: ProductCategory

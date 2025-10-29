@@ -1,4 +1,4 @@
-package Screens // Asegúrate de que el paquete sea 'Screens'
+package Screens
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -8,19 +8,22 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.example.mitienda.ProductCategory // Importar el nuevo enum
+import com.example.mitienda.ProductCategory
+import com.example.mitienda.Product
 import com.example.mitienda.ProductViewModel
-
- // Asumo que ProductList está en Screens, si no, ajusta el import
+import androidx.compose.runtime.collectAsState // Importante para StateFlow
 
 @Composable
 fun AdminScreen(viewModel: ProductViewModel) {
+
+    // CAMBIO CRUCIAL: Observar el StateFlow de la base de datos
+    val uiState by viewModel.uiState.collectAsState()
+    val productList = uiState.productList // La lista persistente
+
     var name by remember { mutableStateOf("") }
     var priceText by remember { mutableStateOf("") }
-
-    // NUEVO: Estado para la categoría seleccionada
     var selectedCategory by remember { mutableStateOf(ProductCategory.INVIERNO) }
-    var expanded by remember { mutableStateOf(false) } // Estado para el Dropdown
+    var expanded by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -44,11 +47,10 @@ fun AdminScreen(viewModel: ProductViewModel) {
         )
         Spacer(modifier = Modifier.height(8.dp))
 
-        // NUEVO: Dropdown para la Categoría
         Box(modifier = Modifier.fillMaxWidth()) {
             OutlinedTextField(
-                value = selectedCategory.name.capitalize(), // Muestra la categoría seleccionada
-                onValueChange = {}, // No se puede cambiar escribiendo, solo seleccionando
+                value = selectedCategory.name.capitalize(),
+                onValueChange = {},
                 label = { Text("Categoría") },
                 readOnly = true,
                 trailingIcon = {
@@ -64,7 +66,7 @@ fun AdminScreen(viewModel: ProductViewModel) {
             DropdownMenu(
                 expanded = expanded,
                 onDismissRequest = { expanded = false },
-                modifier = Modifier.fillMaxWidth(0.9f) // Ajustar el ancho
+                modifier = Modifier.fillMaxWidth(0.9f)
             ) {
                 ProductCategory.entries.forEach { category ->
                     DropdownMenuItem(
@@ -83,11 +85,9 @@ fun AdminScreen(viewModel: ProductViewModel) {
             onClick = {
                 val price = priceText.toDoubleOrNull() ?: 0.0
                 if (name.isNotBlank() && price > 0.0) {
-                    // CAMBIO CRUCIAL: Pasamos la categoría al addProduct
                     viewModel.addProduct(name.trim(), price, selectedCategory)
                     name = ""
                     priceText = ""
-                    // Opcional: resetear categoría a INVIERNO
                     selectedCategory = ProductCategory.INVIERNO
                 }
             },
@@ -104,7 +104,7 @@ fun AdminScreen(viewModel: ProductViewModel) {
         )
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Lista de productos.
-        ProductList(products = viewModel.products, isClientView = false, onAddToCart = { })
+        // Se pasa la lista persistente: productList
+        ProductList(products = productList, isClientView = false, onAddToCart = { })
     }
 }
