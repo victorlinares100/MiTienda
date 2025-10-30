@@ -7,12 +7,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import Screens.TiendaApp
-
-
-// 🚨 ASUME que esta importación es correcta si el archivo Theme.kt está en el paquete principal:
-// Si tu tema se llama diferente (ej. AppTheme), reemplázalo aquí.
-
-
 class MainActivity : ComponentActivity() {
 
     // Inicializa el ViewModel usando el Factory.
