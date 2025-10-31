@@ -23,7 +23,6 @@ fun ClientCartScreen(viewModel: ProductViewModel) {
         if (viewModel.cart.isNotEmpty()) {
             LazyColumn(modifier = Modifier.weight(1f)) {
                 items(viewModel.cart) { item ->
-                    // Elemento del carrito: Nombre y precio
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -38,7 +37,7 @@ fun ClientCartScreen(viewModel: ProductViewModel) {
             }
             Spacer(modifier = Modifier.height(16.dp))
             Button(
-                onClick = { /* Lógica de Compra / Pago */ },
+                onClick = { /* TODO: Lógica de pago */ },
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text("Proceder al Pago")

@@ -19,5 +19,6 @@ data class Product(
     val id: Int = 0, // Se inicializa a 0 para que Room lo autogenere
     val name: String,
     val price: Double,
+    val description: String,
     val category: ProductCategory
 )
