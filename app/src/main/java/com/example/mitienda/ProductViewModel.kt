@@ -51,6 +51,11 @@ class ProductViewModel(private val repository: ProductRepository) : ViewModel() 
         _cart.add(product)
     }
 
+    fun removeFromCart(product: Product) {
+        _cart.remove(product)
+    }
+
+
     fun getProductsGroupedByCategory(): Map<ProductCategory, List<Product>> {
         return uiState.value.productList.groupBy { it.category }
     }
