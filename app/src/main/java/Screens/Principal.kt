@@ -110,7 +110,7 @@ fun TiendaApp(viewModel: ProductViewModel) {
                     Rol.CLIENT -> {
                         // <-- CAMBIO: Añadimos las nuevas pantallas al 'when'
                         when (clientScreen) {
-                            ClientScreenRoute.HOME -> HomeScreen()
+                            ClientScreenRoute.HOME -> HomeScreen(viewModel = viewModel, onGoToCatalog = { clientScreen = ClientScreenRoute.CATALOG })
                             ClientScreenRoute.CATALOG -> ClientCatalogScreen(viewModel)
                             ClientScreenRoute.CART -> ClientCartScreen(viewModel)
                             ClientScreenRoute.NOS -> NosotrosScreen()
