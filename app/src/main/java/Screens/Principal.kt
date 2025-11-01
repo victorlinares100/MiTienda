@@ -21,15 +21,10 @@ enum class ClientScreenRoute(val title: String) {
     NOS("Nosotros")
 }
 
-// ==============================================================================
-// 1. APP PRINCIPAL: MANEJO DE SESIÓN Y ROLES
-// ==============================================================================
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TiendaApp(viewModel: ProductViewModel) {
     var currentRole by remember { mutableStateOf<Rol?>(null) }
-    // <-- CAMBIO: La pantalla inicial ahora es HOME
     var clientScreen by remember { mutableStateOf(ClientScreenRoute.HOME) }
 
     if (currentRole == null) {
@@ -95,9 +90,8 @@ fun TiendaApp(viewModel: ProductViewModel) {
         ) { padding ->
             Box(modifier = Modifier.padding(padding)) {
                 when (currentRole) {
-                    Rol.ADMIN -> AdminScreen(viewModel) // <-- Asumo que esta pantalla existe
+                    Rol.ADMIN -> AdminScreen(viewModel) //
                     Rol.CLIENT -> {
-                        // <-- CAMBIO: Añadimos las nuevas pantallas al 'when'
                         when (clientScreen) {
                             ClientScreenRoute.HOME -> HomeScreen(viewModel = viewModel, onGoToCatalog = { clientScreen = ClientScreenRoute.CATALOG })
                             ClientScreenRoute.CATALOG -> ClientCatalogScreen(viewModel)
