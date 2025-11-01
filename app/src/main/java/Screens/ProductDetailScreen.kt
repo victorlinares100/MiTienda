@@ -7,8 +7,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.example.mitienda.Product
-import com.example.mitienda.ProductViewModel
+import Model.Product
+import ViewModel.ProductViewModel
 
 @Composable
 fun ProductDetailScreen(
@@ -54,7 +54,7 @@ fun ProductDetailScreen(
             Button(
                 onClick = {
                     viewModel.addToCart(product)
-                    onBack() // vuelve a Home o catálogo después de agregar
+                    onBack()
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {

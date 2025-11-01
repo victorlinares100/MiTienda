@@ -12,8 +12,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.example.mitienda.Product
-import com.example.mitienda.ProductViewModel
+import ViewModel.ProductViewModel
 import kotlinx.coroutines.launch
 
 @Composable
@@ -21,10 +20,8 @@ fun ClientCartScreen(viewModel: ProductViewModel) {
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
 
-    // 🔹 Estado local para manejar cantidades (map id → cantidad)
     val quantities = remember { mutableStateMapOf<Int, Int>() }
 
-    // 🔹 Calcula el total general
     val total = viewModel.cart.sumOf { product ->
         val qty = quantities[product.id] ?: 1
         product.price * qty
@@ -90,10 +87,8 @@ fun ClientCartScreen(viewModel: ProductViewModel) {
                                         }
                                     }
 
-                                    // 🔹 Subtotal
                                     Text("Subtotal: $${"%.2f".format(subtotal)}")
 
-                                    // 🔹 Botón eliminar
                                     IconButton(onClick = {
                                         viewModel.removeFromCart(product)
                                         quantities.remove(product.id)
@@ -109,7 +104,6 @@ fun ClientCartScreen(viewModel: ProductViewModel) {
                     }
                 }
 
-                // 🔹 Total general
                 Spacer(modifier = Modifier.height(12.dp))
                 Text(
                     "Total general: $${"%.2f".format(total)}",
@@ -128,7 +122,6 @@ fun ClientCartScreen(viewModel: ProductViewModel) {
                     Text("Proceder al Pago")
                 }
             } else {
-                // 🔹 Estado vacío
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center

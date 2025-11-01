@@ -1,16 +1,11 @@
 package Data
 
-
-
 import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import com.example.mitienda.Product
-import com.example.mitienda.ProductCategory
+import Model.Product
 
-// IMPORTANTE: Para guardar enums, Room requiere un TypeConverter.
-// Por simplicidad, asumiremos que Product solo usa tipos básicos (Int, Double, String) y que Room puede manejar el enum.
 @Database(entities = [Product::class], version = 1, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
 

@@ -8,7 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.example.mitienda.Product
+import Model.Product
 
 @Composable
 fun ProductList(products: List<Product>, isClientView: Boolean, onAddToCart: (Product) -> Unit) {
@@ -41,14 +41,12 @@ fun ProductList(products: List<Product>, isClientView: Boolean, onAddToCart: (Pr
                             Text(product.name, style = MaterialTheme.typography.titleMedium)
                             Text("$${product.price}", style = MaterialTheme.typography.bodyMedium)
 
-                            // AHORA MOSTRAMOS LA CATEGORÍA
                             Text(
                                 "Categoría: ${product.category.name.capitalize()}",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
-                        // El botón "Agregar" solo se muestra en la vista del cliente
                         if (isClientView) {
                             Button(onClick = { onAddToCart(product) }) {
                                 Text("Agregar")

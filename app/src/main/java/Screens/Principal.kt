@@ -1,9 +1,8 @@
-package Screens // NOTA: Asumo que el paquete principal sigue siendo 'com.example.mitienda'
+package Screens
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-// <-- CAMBIO: Importamos los iconos nuevos
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Logout
@@ -12,11 +11,9 @@ import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import com.example.mitienda.ProductViewModel
-import com.example.mitienda.Rol
+import ViewModel.ProductViewModel
+import Model.Rol
 
-// <-- CAMBIO: Añadimos HOME y ABOUT_US al enum.
-// También añadí una propiedad 'title' para que el título de la TopBar sea dinámico.
 enum class ClientScreenRoute(val title: String) {
     HOME("Inicio"),
     CATALOG("Catálogo"),
@@ -35,15 +32,13 @@ fun TiendaApp(viewModel: ProductViewModel) {
     // <-- CAMBIO: La pantalla inicial ahora es HOME
     var clientScreen by remember { mutableStateOf(ClientScreenRoute.HOME) }
 
-    // Si no hay rol, forzamos la pantalla de Login
     if (currentRole == null) {
         LoginScreen(
             onLoginSuccess = { rol ->
-                currentRole = rol // Establece el rol y pasa a la vista principal
+                currentRole = rol
             }
         )
     } else {
-        // Usuario logueado: Mostramos la interfaz de la aplicación
         Scaffold(
             topBar = {
                 CenterAlignedTopAppBar(
@@ -57,7 +52,6 @@ fun TiendaApp(viewModel: ProductViewModel) {
                             }
                         )
                     },
-                    // Botón de Cerrar Sesión
                     actions = {
                         IconButton(onClick = { currentRole = null }) {
                             Icon(Icons.Default.Logout, contentDescription = "Cerrar Sesión")
@@ -65,11 +59,9 @@ fun TiendaApp(viewModel: ProductViewModel) {
                     }
                 )
             },
-            // Barra de Navegación Inferior (solo para CLIENTE)
             bottomBar = {
                 if (currentRole == Rol.CLIENT) {
                     NavigationBar {
-                        // <-- CAMBIO: Añadimos el item "Home"
                         NavigationBarItem(
                             selected = clientScreen == ClientScreenRoute.HOME,
                             onClick = { clientScreen = ClientScreenRoute.HOME },
@@ -77,7 +69,6 @@ fun TiendaApp(viewModel: ProductViewModel) {
                             label = { Text("Inicio") }
                         )
 
-                        // Item "Catálogo" (existente)
                         NavigationBarItem(
                             selected = clientScreen == ClientScreenRoute.CATALOG,
                             onClick = { clientScreen = ClientScreenRoute.CATALOG },
@@ -85,7 +76,6 @@ fun TiendaApp(viewModel: ProductViewModel) {
                             label = { Text("Catálogo") }
                         )
 
-                        // Item "Carrito" (existente)
                         NavigationBarItem(
                             selected = clientScreen == ClientScreenRoute.CART,
                             onClick = { clientScreen = ClientScreenRoute.CART },
@@ -93,7 +83,6 @@ fun TiendaApp(viewModel: ProductViewModel) {
                             label = { Text("Carrito (${viewModel.cart.size})") }
                         )
 
-                        // <-- CAMBIO: Añadimos el item "Nosotros"
                         NavigationBarItem(
                             selected = clientScreen == ClientScreenRoute.NOS,
                             onClick = { clientScreen = ClientScreenRoute.NOS },

@@ -1,14 +1,13 @@
 package Screens
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.example.mitienda.Rol
-import com.example.mitienda.UserRepository
+import Model.Rol
+import Model.UserRepository
 
 @Composable
 fun LoginScreen(onLoginSuccess: (Rol) -> Unit) {
@@ -16,7 +15,6 @@ fun LoginScreen(onLoginSuccess: (Rol) -> Unit) {
     var password by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
-    // 🔹 Aplica fondo según el esquema de colores de tu tema (normalmente blanco en modo claro)
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background

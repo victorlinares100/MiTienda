@@ -12,9 +12,9 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.example.mitienda.Product
-import com.example.mitienda.ProductCategory
-import com.example.mitienda.ProductViewModel
+import Model.Product
+import Model.ProductCategory
+import ViewModel.ProductViewModel
 import androidx.compose.runtime.collectAsState
 
 @Composable
@@ -162,7 +162,6 @@ fun AdminScreen(viewModel: ProductViewModel) {
 
                         Row {
                             IconButton(onClick = {
-                                // Rellenar campos para editar
                                 editingProductId = product.id
                                 name = product.name
                                 priceText = product.price.toString()

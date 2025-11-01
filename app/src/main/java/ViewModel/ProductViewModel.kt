@@ -1,9 +1,11 @@
-package com.example.mitienda
+package ViewModel
 
 import Data.ProductRepository
 import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import Model.Product
+import Model.ProductCategory
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 

@@ -13,7 +13,6 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun NosotrosScreen() {
-    // Fondo y scroll
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
@@ -24,7 +23,6 @@ fun NosotrosScreen() {
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.Start
         ) {
-            // Título principal
             Text(
                 text = "Nuestra Historia",
                 style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
@@ -40,7 +38,6 @@ fun NosotrosScreen() {
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Misión
             Text(
                 text = "Misión",
                 style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
@@ -55,7 +52,6 @@ fun NosotrosScreen() {
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Visión
             Text(
                 text = "Visión",
                 style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
@@ -70,7 +66,6 @@ fun NosotrosScreen() {
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Valores
             Text(
                 text = "Valores",
                 style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
@@ -86,7 +81,6 @@ fun NosotrosScreen() {
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Frase final o slogan
             Text(
                 text = "“Vestimos tu actitud. Inspiramos tu estilo.”",
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Medium),

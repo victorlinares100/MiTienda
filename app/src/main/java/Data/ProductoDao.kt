@@ -1,7 +1,7 @@
 package Data
 
 import androidx.room.*
-import com.example.mitienda.Product
+import Model.Product
 import kotlinx.coroutines.flow.Flow
 
 @Dao

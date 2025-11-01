@@ -1,6 +1,6 @@
 package Data
 
-import com.example.mitienda.Product
+import Model.Product
 import kotlinx.coroutines.flow.Flow
 
 class ProductRepository(private val productoDao: ProductoDao) {

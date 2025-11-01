@@ -1,5 +1,6 @@
 package com.example.mitienda
 
+import Model.Product
 
 object CartManager {
     private val items = mutableListOf<Product>()

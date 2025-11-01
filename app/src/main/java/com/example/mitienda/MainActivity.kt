@@ -7,6 +7,8 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import Screens.TiendaApp
+import ViewModel.ProductViewModel
+import ViewModel.ViewModelFactory
 
 class MainActivity : ComponentActivity() {
 
@@ -22,8 +24,6 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            // Utilizamos la función del tema
-            // Pasa la instancia única del ViewModel a la aplicación
             TiendaApp(viewModel = viewModel)
         }
     }
