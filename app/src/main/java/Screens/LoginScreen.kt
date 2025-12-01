@@ -1,19 +1,28 @@
 package Screens
 
+import Model.Rol
+import ViewModel.LoginViewModel
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import Model.Rol
-import Model.UserRepository
+// Importante: Si no tienes viewModel() automático, agrega la depencia: implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.1")
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 @Composable
-fun LoginScreen(onLoginSuccess: (Rol) -> Unit) {
+fun LoginScreen(
+    onLoginSuccess: (Rol) -> Unit,
+    viewModel: LoginViewModel = viewModel() // Inyectamos el VM
+) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    var errorMessage by remember { mutableStateOf<String?>(null) }
+
+    // Observamos los estados del ViewModel
+    val isLoading by viewModel.isLoading.collectAsState()
+    val errorMessage by viewModel.errorMessage.collectAsState()
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -26,14 +35,15 @@ fun LoginScreen(onLoginSuccess: (Rol) -> Unit) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            Text("Iniciar Sesión", style = MaterialTheme.typography.headlineMedium)
+            Text("Iniciar Sesión (API)", style = MaterialTheme.typography.headlineMedium)
             Spacer(Modifier.height(32.dp))
 
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it },
-                label = { Text("Email o Usuario") },
-                modifier = Modifier.fillMaxWidth()
+                label = { Text("Email") },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true
             )
             Spacer(Modifier.height(8.dp))
 
@@ -41,30 +51,31 @@ fun LoginScreen(onLoginSuccess: (Rol) -> Unit) {
                 value = password,
                 onValueChange = { password = it },
                 label = { Text("Contraseña") },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true
             )
             Spacer(Modifier.height(16.dp))
 
-            Button(
-                onClick = {
-                    val user = UserRepository.authenticate(email.trim(), password.trim())
-                    if (user != null) {
-                        errorMessage = null
-                        onLoginSuccess(user.role)
-                    } else {
-                        errorMessage = "Usuario o contraseña incorrectos. Inténtelo de nuevo."
-                    }
-                },
-                modifier = Modifier.fillMaxWidth(),
-                enabled = email.isNotBlank() && password.isNotBlank()
-            ) {
-                Text("Ingresar")
+            if (isLoading) {
+                CircularProgressIndicator()
+            } else {
+                Button(
+                    onClick = {
+                        // Llamamos al ViewModel en lugar del Repo directo
+                        viewModel.login(email.trim(), password.trim(), onLoginSuccess)
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = email.isNotBlank() && password.isNotBlank()
+                ) {
+                    Text("Ingresar")
+                }
             }
 
-            errorMessage?.let {
+            // Mostrar errores si existen
+            errorMessage?.let { msg ->
                 Spacer(Modifier.height(16.dp))
                 Text(
-                    it,
+                    text = msg,
                     color = MaterialTheme.colorScheme.error,
                     style = MaterialTheme.typography.bodyMedium
                 )
