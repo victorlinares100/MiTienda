@@ -1,21 +1,23 @@
 package Screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import ViewModel.ProductViewModel
 import Model.Product
+import coil.compose.AsyncImage
 
 @Composable
 fun HomeScreen(
@@ -41,33 +43,42 @@ fun HomeScreen(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(20.dp)
+                    .padding(16.dp)
             ) {
+                // --- ENCABEZADO ---
                 Text(
                     text = "¡Bienvenido a Mi Tienda!",
                     style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Bold,
                     modifier = Modifier.fillMaxWidth(),
                     textAlign = TextAlign.Center
                 )
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "Ropa deportiva y de temporada seleccionada para ti.",
+                    text = "Lo mejor en ropa deportiva.",
                     style = MaterialTheme.typography.bodyLarge,
                     modifier = Modifier.fillMaxWidth(),
-                    textAlign = TextAlign.Center
+                    textAlign = TextAlign.Center,
+                    color = Color.Gray
                 )
-                Spacer(modifier = Modifier.height(18.dp))
 
-                Text("Destacados", style = MaterialTheme.typography.titleMedium)
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(24.dp))
+                Text("Destacados", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                Spacer(modifier = Modifier.height(16.dp))
 
+                // --- GRILLA DE PRODUCTOS (El cambio principal) ---
                 if (products.isNotEmpty()) {
+                    // Tomamos los primeros 6 para mostrar en el Home
                     val featured = products.take(6)
-                    LazyRow(
+
+                    // LazyVerticalGrid crea las columnas (2 columnas fijas)
+                    LazyVerticalGrid(
+                        columns = GridCells.Fixed(2), // 2 Columnas
                         horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
                         modifier = Modifier
+                            .weight(1f) // Esto hace que la grilla ocupe todo el espacio disponible al medio
                             .fillMaxWidth()
-                            .height(160.dp)
                     ) {
                         items(featured) { product ->
                             FeaturedProductCard(
@@ -77,47 +88,90 @@ fun HomeScreen(
                         }
                     }
                 } else {
+                    // Estado vacío
                     Box(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .height(120.dp),
+                            .weight(1f)
+                            .fillMaxWidth(),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text("No hay productos cargados aún. Visita el catálogo.")
+                        CircularProgressIndicator()
                     }
                 }
 
-                Spacer(modifier = Modifier.weight(1f))
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // --- BOTÓN INFERIOR ---
                 Button(
                     onClick = { onGoToCatalog?.invoke() },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(48.dp)
+                        .height(50.dp)
                 ) {
-                    Text("Ver Catálogo")
+                    Text("Ver Catálogo Completo")
                 }
             }
         }
     }
 }
-
 
 @Composable
 private fun FeaturedProductCard(product: Product, onDetail: () -> Unit) {
     Card(
         modifier = Modifier
-            .width(200.dp)
-            .fillMaxHeight()
+            .fillMaxWidth()
+            .height(260.dp), // Altura fija para que todas las tarjetas sean iguales
+        elevation = CardDefaults.cardElevation(4.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        // Le damos clic a toda la tarjeta
+        onClick = onDetail
     ) {
-        Column(modifier = Modifier.padding(12.dp)) {
-            Text(product.name, style = MaterialTheme.typography.titleMedium, maxLines = 1)
-            Spacer(modifier = Modifier.height(6.dp))
-            Text("Precio: $${"%.2f".format(product.price)}", style = MaterialTheme.typography.bodyMedium)
-            Spacer(modifier = Modifier.weight(1f))
-            Button(onClick = onDetail, modifier = Modifier.fillMaxWidth()) {
-                Text("Ver Detalle")
+        Column {
+            // --- IMAGEN (Ahora sí se ve) ---
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(140.dp) // La imagen ocupa la mitad superior
+                    .background(Color.LightGray)
+            ) {
+                AsyncImage(
+                    model = product.image?.url ?: "https://via.placeholder.com/150",
+                    contentDescription = product.name,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop // Recorta la imagen para llenar el cuadro
+                )
+            }
+
+            // --- TEXTOS ---
+            Column(
+                modifier = Modifier
+                    .padding(12.dp)
+                    .fillMaxSize(),
+                verticalArrangement = Arrangement.SpaceBetween
+            ) {
+                Column {
+                    Text(
+                        text = product.name,
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = product.brand?.nombre ?: "Genérico",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color.Gray
+                    )
+                }
+
+                Text(
+                    text = "$${product.price}",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.Bold
+                )
             }
         }
     }
 }
-
