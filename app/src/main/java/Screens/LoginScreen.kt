@@ -3,19 +3,21 @@ package Screens
 import Model.Rol
 import ViewModel.LoginViewModel
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
-// Importante: Si no tienes viewModel() automático, agrega la depencia: implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.1")
 import androidx.lifecycle.viewmodel.compose.viewModel
 
 @Composable
 fun LoginScreen(
     onLoginSuccess: (Rol) -> Unit,
-    viewModel: LoginViewModel = viewModel() // Inyectamos el VM
+    onNavigateToRegister: () -> Unit, // <--- NUEVO PARÁMETRO
+    viewModel: LoginViewModel = viewModel()
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -43,7 +45,8 @@ fun LoginScreen(
                 onValueChange = { email = it },
                 label = { Text("Email") },
                 modifier = Modifier.fillMaxWidth(),
-                singleLine = true
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
             )
             Spacer(Modifier.height(8.dp))
 
@@ -52,7 +55,8 @@ fun LoginScreen(
                 onValueChange = { password = it },
                 label = { Text("Contraseña") },
                 modifier = Modifier.fillMaxWidth(),
-                singleLine = true
+                singleLine = true,
+                visualTransformation = PasswordVisualTransformation()
             )
             Spacer(Modifier.height(16.dp))
 
@@ -61,7 +65,6 @@ fun LoginScreen(
             } else {
                 Button(
                     onClick = {
-                        // Llamamos al ViewModel en lugar del Repo directo
                         viewModel.login(email.trim(), password.trim(), onLoginSuccess)
                     },
                     modifier = Modifier.fillMaxWidth(),
@@ -79,6 +82,13 @@ fun LoginScreen(
                     color = MaterialTheme.colorScheme.error,
                     style = MaterialTheme.typography.bodyMedium
                 )
+            }
+
+            Spacer(Modifier.height(24.dp))
+
+            // --- NUEVO BOTÓN DE REGISTRO ---
+            TextButton(onClick = onNavigateToRegister) {
+                Text("¿No tienes cuenta? Regístrate aquí")
             }
         }
     }

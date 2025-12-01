@@ -11,7 +11,7 @@ object UserRepository {
     var currentUser: User? = null
         private set
 
-    // Función suspendida (asíncrona) para llamar a la API
+    // --- LOGIN ---
     suspend fun authenticate(email: String, passwordAttempt: String): Result<User> {
         return try {
             val request = LoginRequest(email, passwordAttempt)
@@ -31,6 +31,29 @@ object UserRepository {
         }
     }
 
+    // --- REGISTRO (NUEVO) ---
+    suspend fun registrar(usuario: User): Result<String> {
+        return try {
+            // Llamamos al endpoint de registro
+            val response = RetrofitClient.apiService.registrar(usuario)
+
+            if (response.isSuccessful) {
+                // Tu backend devuelve texto plano (ej: "Usuario registrado exitosamente").
+                // response.body()?.string() lee ese texto.
+                val mensajeExito = response.body()?.string() ?: "Registro exitoso"
+                Result.success(mensajeExito)
+            } else {
+                // Si falla (ej: 400 "El correo ya está en uso"), leemos el error.
+                val mensajeError = response.errorBody()?.string() ?: "Error desconocido en el registro"
+                Result.failure(Exception(mensajeError))
+            }
+        } catch (e: Exception) {
+            Log.e("UserRepository", "Error registro", e)
+            Result.failure(e)
+        }
+    }
+
+    // --- LOGOUT ---
     fun logout() {
         currentUser = null
     }
