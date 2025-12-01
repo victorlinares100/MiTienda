@@ -64,9 +64,14 @@ class MainActivity : ComponentActivity() {
                 }
 
                 "admin" -> {
-                    // Pantalla de Administración
-                    // Aquí podrías agregar un botón de logout en el futuro si AdminScreen lo soporta
-                    AdminScreen(viewModel = productViewModel)
+                    // Pantalla de Administración (CRUD)
+                    AdminScreen(
+                        viewModel = productViewModel,
+                        onLogout = {
+                            Data.UserRepository.logout() // Limpiamos sesión
+                            currentScreen = "login"      // Volvemos al login
+                        }
+                    )
                 }
 
                 "cliente" -> {
