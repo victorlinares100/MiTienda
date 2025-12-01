@@ -1,15 +1,103 @@
 package Data
 
-import Model.Product
-import kotlinx.coroutines.flow.Flow
+import Api.RetrofitClient
+import Model.*
+import android.util.Log
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.asRequestBody
+import java.io.File
 
-class ProductRepository(private val productoDao: ProductoDao) {
+class ProductRepository {
 
-    fun getAllProductsStream(): Flow<List<Product>> = productoDao.getAllProducts()
+    // Instancia de la API
+    private val api = RetrofitClient.apiService
 
-    suspend fun insertProduct(product: Product) = productoDao.insert(product)
+    // Tu API Key de ImgBB (Copiada de tu código anterior)
+    private val imgBBKey = "d84d25b4cf23d4403e33c8a450a58508"
 
-    suspend fun updateProduct(product: Product) = productoDao.update(product)
+    // 1. OBTENER TODOS LOS PRODUCTOS
+    suspend fun getAllProducts(): List<Product> {
+        return try {
+            val response = api.getProducts()
+            if (response.isSuccessful) {
+                response.body() ?: emptyList()
+            } else {
+                Log.e("Repo", "Error al obtener productos: ${response.code()}")
+                emptyList()
+            }
+        } catch (e: Exception) {
+            Log.e("Repo", "Error de red: ${e.message}")
+            emptyList()
+        }
+    }
 
-    suspend fun deleteProduct(product: Product) = productoDao.delete(product)
+    // 2. CREAR PRODUCTO
+    suspend fun insertProduct(request: ProductRequest): Boolean {
+        return try {
+            val response = api.createProduct(request)
+            response.isSuccessful
+        } catch (e: Exception) {
+            Log.e("Repo", "Error al crear: ${e.message}")
+            false
+        }
+    }
+
+    // 3. ACTUALIZAR PRODUCTO
+    suspend fun updateProduct(id: Long, request: ProductRequest): Boolean {
+        return try {
+            val response = api.updateProduct(id, request)
+            response.isSuccessful
+        } catch (e: Exception) {
+            Log.e("Repo", "Error al actualizar: ${e.message}")
+            false
+        }
+    }
+
+    // 4. ELIMINAR PRODUCTO
+    suspend fun deleteProduct(id: Long): Boolean {
+        return try {
+            val response = api.deleteProduct(id)
+            response.isSuccessful
+        } catch (e: Exception) {
+            Log.e("Repo", "Error al eliminar: ${e.message}")
+            false
+        }
+    }
+
+    // 5. CARGAR LISTAS AUXILIARES (Categorias, Marcas, Tallas)
+    suspend fun getCategorias(): List<Categoria> = try {
+        api.getCategorias().body() ?: emptyList()
+    } catch (e: Exception) { emptyList() }
+
+    suspend fun getMarcas(): List<Marca> = try {
+        api.getMarcas().body() ?: emptyList()
+    } catch (e: Exception) { emptyList() }
+
+    suspend fun getTallas(): List<Talla> = try {
+        api.getTallas().body() ?: emptyList()
+    } catch (e: Exception) { emptyList() }
+
+    // 6. SUBIR IMAGEN A IMGBB
+    suspend fun uploadImage(file: File): String? {
+        return try {
+            // Preparamos el archivo para enviarlo por internet
+            val requestFile = file.asRequestBody("image/*".toMediaTypeOrNull())
+            val body = MultipartBody.Part.createFormData("image", file.name, requestFile)
+
+            // Llamamos a la API de ImgBB
+            val response = api.uploadImage(apiKey = imgBBKey, image = body)
+
+            if (response.isSuccessful) {
+                // Retornamos la URL que nos da ImgBB
+                response.body()?.data?.url
+            } else {
+                Log.e("ImgBB", "Error subida: ${response.errorBody()?.string()}")
+                null
+            }
+        } catch (e: Exception) {
+            Log.e("ImgBB", "Exception subida", e)
+            null
+        }
+    }
 }

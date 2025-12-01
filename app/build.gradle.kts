@@ -78,5 +78,7 @@ dependencies {
     // CORRUTINAS (Para que no se congele la app)
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
 
+    implementation("io.coil-kt:coil-compose:2.4.0")
+
 
 }

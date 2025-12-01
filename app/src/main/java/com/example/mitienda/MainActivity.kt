@@ -1,8 +1,7 @@
 package com.example.mitienda
 
-import Data.AppDatabase
 import Data.ProductRepository
-import Data.UserRepository // Importamos el Repo para limpiar la sesión al salir
+import Data.UserRepository
 import Model.Rol
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -18,26 +17,25 @@ import ViewModel.ViewModelFactory
 
 class MainActivity : ComponentActivity() {
 
-    // Inicializa el ViewModel de Productos
+    // --- CAMBIO IMPORTANTE AQUÍ ---
+    // Ya no usamos AppDatabase ni Dao.
+    // El repositorio se inicializa vacío: ProductRepository()
     private val productViewModel: ProductViewModel by viewModels {
         ViewModelFactory(
-            ProductRepository(
-                AppDatabase.getDatabase(this).productoDao()
-            )
+            ProductRepository()
         )
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            // Variable de estado para controlar la navegación básica
+            // Variable de estado para controlar la navegación
             var currentScreen by remember { mutableStateOf("login") }
 
             when (currentScreen) {
                 "login" -> {
                     LoginScreen(
                         onLoginSuccess = { rol ->
-                            // Redirigir según el rol recibido desde la API
                             if (rol == Rol.ADMIN) {
                                 currentScreen = "admin"
                             } else {
@@ -53,35 +51,30 @@ class MainActivity : ComponentActivity() {
                 "registro" -> {
                     RegisterScreen(
                         onRegisterSuccess = {
-                            // Al terminar registro, vamos al login
                             currentScreen = "login"
                         },
                         onNavigateToLogin = {
-                            // Si cancela, vuelve al login
                             currentScreen = "login"
                         }
                     )
                 }
 
                 "admin" -> {
-                    // Pantalla de Administración (CRUD)
                     AdminScreen(
                         viewModel = productViewModel,
                         onLogout = {
-                            Data.UserRepository.logout() // Limpiamos sesión
-                            currentScreen = "login"      // Volvemos al login
+                            Data.UserRepository.logout()
+                            currentScreen = "login"
                         }
                     )
                 }
 
                 "cliente" -> {
-                    // Pantalla de Cliente
-                    // AHORA SÍ: Pasamos el parámetro onLogout que agregamos en TiendaApp
                     TiendaApp(
                         viewModel = productViewModel,
                         onLogout = {
-                            UserRepository.logout() // Limpiamos el usuario actual en memoria
-                            currentScreen = "login" // Volvemos a la pantalla de login
+                            UserRepository.logout()
+                            currentScreen = "login"
                         }
                     )
                 }

@@ -7,10 +7,9 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import Model.ProductCategory
 import ViewModel.ProductViewModel
 import Model.Product
-import androidx.compose.runtime.collectAsState // Importante para StateFlow
+import androidx.compose.runtime.collectAsState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -18,20 +17,28 @@ fun ClientCatalogScreen(viewModel: ProductViewModel) {
 
     val uiState by viewModel.uiState.collectAsState()
     val allProducts = uiState.productList
+    val categorias = uiState.categorias // Obtenemos las categorías de la API
 
-    var selectedCategory: ProductCategory? by remember { mutableStateOf(null) }
+    // Ahora filtramos por ID (Long) en vez de Enum
+    var selectedCategoryId: Long? by remember { mutableStateOf(null) }
 
-    val filteredProducts: List<Product> = remember(allProducts, selectedCategory) {
-        if (selectedCategory == null) {
-            allProducts // Muestra la lista completa de la DB
+    // Lógica de filtrado
+    val filteredProducts: List<Product> = remember(allProducts, selectedCategoryId) {
+        if (selectedCategoryId == null) {
+            allProducts // Mostrar todos
         } else {
-            allProducts.filter { it.category == selectedCategory }
+            // Filtramos si el ID de la categoría del producto coincide con el seleccionado
+            allProducts.filter { it.category?.id == selectedCategoryId }
         }
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
 
-        // BARRA DE FILTROS DE CATEGORÍA
+        // --- BARRA DE FILTROS DE CATEGORÍA ---
+        if (uiState.isLoading) {
+            LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+        }
+
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -39,23 +46,26 @@ fun ClientCatalogScreen(viewModel: ProductViewModel) {
                 .padding(vertical = 8.dp, horizontal = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
+            // Chip "Todos"
             FilterChip(
-                selected = selectedCategory == null,
-                onClick = { selectedCategory = null },
+                selected = selectedCategoryId == null,
+                onClick = { selectedCategoryId = null },
                 label = { Text("Todos") }
             )
 
-            ProductCategory.entries.forEach { category ->
+            // Chips dinámicos desde la API
+            categorias.forEach { category ->
                 FilterChip(
-                    selected = selectedCategory == category,
-                    onClick = { selectedCategory = category },
-                    label = { Text(category.name.capitalize()) }
+                    selected = selectedCategoryId == category.id,
+                    onClick = { selectedCategoryId = category.id },
+                    label = { Text(category.nombre) }
                 )
             }
         }
 
         Divider()
 
+        // Reutilizamos la lista que ya arreglamos antes
         ProductList(
             products = filteredProducts,
             isClientView = true,

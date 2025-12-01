@@ -1,46 +1,99 @@
 package Screens
 
+import Model.*
+import Utils.FileUtils
+import ViewModel.ProductViewModel
+import android.net.Uri
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Logout // Importamos el icono de Logout
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import Model.Product
-import Model.ProductCategory
-import ViewModel.ProductViewModel
-import androidx.compose.runtime.collectAsState
+import coil.compose.AsyncImage
+import coil.compose.rememberAsyncImagePainter
 
-@OptIn(ExperimentalMaterial3Api::class) // Necesario para la TopBar
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdminScreen(
     viewModel: ProductViewModel,
-    onLogout: () -> Unit // <--- Nuevo parámetro para salir
+    onLogout: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val productList = uiState.productList
+    val context = LocalContext.current
 
-    // Estados del formulario
+    // --- ESTADOS DEL FORMULARIO ---
     var name by remember { mutableStateOf("") }
     var priceText by remember { mutableStateOf("") }
-    var description by remember { mutableStateOf("") }
-    var selectedCategory by remember { mutableStateOf(ProductCategory.INVIERNO) }
-    var expanded by remember { mutableStateOf(false) }
-    var editingProductId by remember { mutableStateOf<Int?>(null) }
+    var stockText by remember { mutableStateOf("") }
 
-    // Usamos Scaffold para tener la barra superior
+    // IDs seleccionados
+    var selectedCatId by remember { mutableStateOf<Long?>(null) }
+    var selectedBrandId by remember { mutableStateOf<Long?>(null) }
+    var selectedSizeId by remember { mutableStateOf<Long?>(null) }
+
+    // Imagen
+    var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
+    var currentImageUrl by remember { mutableStateOf<String?>(null) } // Para cuando editamos
+
+    // Control de Edición
+    var editingProductId by remember { mutableStateOf<Long?>(null) }
+
+    // Launcher para abrir la galería
+    val imagePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        selectedImageUri = uri
+    }
+
+    // Dropdown States (Expandidos o no)
+    var catExpanded by remember { mutableStateOf(false) }
+    var brandExpanded by remember { mutableStateOf(false) }
+    var sizeExpanded by remember { mutableStateOf(false) }
+
+    // Helper para limpiar formulario
+    fun clearForm() {
+        name = ""; priceText = ""; stockText = ""
+        selectedCatId = null; selectedBrandId = null; selectedSizeId = null
+        selectedImageUri = null; currentImageUrl = null
+        editingProductId = null
+    }
+
+    // Helper para cargar datos al editar
+    fun loadProductForEdit(product: Product) {
+        editingProductId = product.id
+        name = product.name
+        priceText = product.price.toString()
+        stockText = product.stock.toString()
+        selectedCatId = product.category?.id
+        selectedBrandId = product.brand?.id
+        selectedSizeId = product.size?.id
+        currentImageUrl = product.image?.url
+        selectedImageUri = null // Reseteamos la uri local
+    }
+
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Panel de Administración") },
+                title = { Text("Administración de Productos") },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primary,
                     titleContentColor = Color.White,
@@ -48,163 +101,208 @@ fun AdminScreen(
                 ),
                 actions = {
                     IconButton(onClick = onLogout) {
-                        Icon(Icons.Default.Logout, contentDescription = "Cerrar Sesión")
+                        Icon(Icons.Default.Logout, contentDescription = "Salir")
                     }
                 }
             )
         }
-    ) { innerPadding ->
-        // Surface con color BLANCO para evitar el fondo negro
-        Surface(
+    ) { padding ->
+        Column(
             modifier = Modifier
+                .padding(padding)
                 .fillMaxSize()
-                .padding(innerPadding),
-            color = Color.White // <--- Aquí forzamos el blanco
+                .padding(16.dp)
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp)
+            // --- FORMULARIO ---
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                elevation = CardDefaults.cardElevation(4.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White)
             ) {
-                Text(
-                    text = if (editingProductId == null) "Agregar Producto" else "Editar Producto",
-                    style = MaterialTheme.typography.titleLarge
-                )
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text(if (editingProductId == null) "Nuevo Producto" else "Editar Producto", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                    Spacer(modifier = Modifier.height(8.dp))
 
-                Spacer(modifier = Modifier.height(8.dp))
+                    // Nombre y Stock
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        OutlinedTextField(
+                            value = name, onValueChange = { name = it },
+                            label = { Text("Nombre") }, modifier = Modifier.weight(1f)
+                        )
+                        OutlinedTextField(
+                            value = stockText, onValueChange = { stockText = it },
+                            label = { Text("Stock") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            modifier = Modifier.width(100.dp)
+                        )
+                    }
 
-                OutlinedTextField(
-                    value = name,
-                    onValueChange = { name = it },
-                    label = { Text("Nombre") },
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                OutlinedTextField(
-                    value = priceText,
-                    onValueChange = { priceText = it },
-                    label = { Text("Precio") },
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                OutlinedTextField(
-                    value = description,
-                    onValueChange = { description = it },
-                    label = { Text("Descripción") },
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                // Selector de Categoría
-                Box(modifier = Modifier.fillMaxWidth()) {
+                    // Precio
                     OutlinedTextField(
-                        value = selectedCategory.name.lowercase().replaceFirstChar { it.uppercase() },
-                        onValueChange = {},
-                        label = { Text("Categoría") },
-                        readOnly = true,
-                        trailingIcon = {
-                            Icon(
-                                Icons.Default.ArrowDropDown,
-                                contentDescription = "Seleccionar Categoría",
-                                Modifier.clickable { expanded = true }
-                            )
-                        },
+                        value = priceText, onValueChange = { priceText = it },
+                        label = { Text("Precio") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         modifier = Modifier.fillMaxWidth()
                     )
 
-                    DropdownMenu(
-                        expanded = expanded,
-                        onDismissRequest = { expanded = false },
-                        modifier = Modifier.fillMaxWidth(0.9f)
-                    ) {
-                        ProductCategory.entries.forEach { category ->
-                            DropdownMenuItem(
-                                text = { Text(category.name.lowercase().replaceFirstChar { it.uppercase() }) },
-                                onClick = {
-                                    selectedCategory = category
-                                    expanded = false
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    // --- SELECTORES (Categoría, Marca, Talla) ---
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                        // Categoría
+                        Box(modifier = Modifier.weight(1f).padding(end = 4.dp)) {
+                            val catName = uiState.categorias.find { it.id == selectedCatId }?.nombre ?: "Categoría"
+                            OutlinedButton(onClick = { catExpanded = true }, modifier = Modifier.fillMaxWidth()) {
+                                Text(catName, maxLines = 1)
+                            }
+                            DropdownMenu(expanded = catExpanded, onDismissRequest = { catExpanded = false }) {
+                                uiState.categorias.forEach { cat ->
+                                    DropdownMenuItem(text = { Text(cat.nombre) }, onClick = { selectedCatId = cat.id; catExpanded = false })
                                 }
+                            }
+                        }
+
+                        // Marca
+                        Box(modifier = Modifier.weight(1f).padding(horizontal = 4.dp)) {
+                            val brandName = uiState.marcas.find { it.id == selectedBrandId }?.nombre ?: "Marca"
+                            OutlinedButton(onClick = { brandExpanded = true }, modifier = Modifier.fillMaxWidth()) {
+                                Text(brandName, maxLines = 1)
+                            }
+                            DropdownMenu(expanded = brandExpanded, onDismissRequest = { brandExpanded = false }) {
+                                uiState.marcas.forEach { brand ->
+                                    DropdownMenuItem(text = { Text(brand.nombre) }, onClick = { selectedBrandId = brand.id; brandExpanded = false })
+                                }
+                            }
+                        }
+
+                        // Talla
+                        Box(modifier = Modifier.weight(1f).padding(start = 4.dp)) {
+                            val sizeName = uiState.tallas.find { it.id == selectedSizeId }?.nombre ?: "Talla"
+                            OutlinedButton(onClick = { sizeExpanded = true }, modifier = Modifier.fillMaxWidth()) {
+                                Text(sizeName, maxLines = 1)
+                            }
+                            DropdownMenu(expanded = sizeExpanded, onDismissRequest = { sizeExpanded = false }) {
+                                uiState.tallas.forEach { size ->
+                                    DropdownMenuItem(text = { Text(size.nombre) }, onClick = { selectedSizeId = size.id; sizeExpanded = false })
+                                }
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    // --- SELECCIONAR IMAGEN ---
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Button(onClick = { imagePickerLauncher.launch("image/*") }) {
+                            Icon(Icons.Default.Image, contentDescription = null)
+                            Spacer(Modifier.width(8.dp))
+                            Text("Imagen")
+                        }
+
+                        Spacer(Modifier.width(16.dp))
+
+                        // Previsualización pequeña
+                        if (selectedImageUri != null) {
+                            AsyncImage(
+                                model = selectedImageUri,
+                                contentDescription = "Preview",
+                                modifier = Modifier.size(50.dp).clip(RoundedCornerShape(4.dp)),
+                                contentScale = ContentScale.Crop
                             )
+                        } else if (currentImageUrl != null) {
+                            AsyncImage(
+                                model = currentImageUrl,
+                                contentDescription = "Current",
+                                modifier = Modifier.size(50.dp).clip(RoundedCornerShape(4.dp)),
+                                contentScale = ContentScale.Crop
+                            )
+                        } else {
+                            Text("Sin imagen", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // --- BOTÓN GUARDAR ---
+                    Button(
+                        onClick = {
+                            val price = priceText.toDoubleOrNull()
+                            val stock = stockText.toIntOrNull()
+
+                            if (name.isNotBlank() && price != null && stock != null &&
+                                selectedCatId != null && selectedBrandId != null && selectedSizeId != null) {
+
+                                val imageFile = selectedImageUri?.let { FileUtils.getFileFromUri(context, it) }
+
+                                if (editingProductId == null) {
+                                    // CREAR
+                                    viewModel.addProduct(name, price, stock, selectedCatId!!, selectedBrandId!!, selectedSizeId!!, imageFile)
+                                    Toast.makeText(context, "Creando producto...", Toast.LENGTH_SHORT).show()
+                                } else {
+                                    // ACTUALIZAR
+                                    viewModel.updateProduct(editingProductId!!, name, price, stock, selectedCatId!!, selectedBrandId!!, selectedSizeId!!, imageFile, currentImageUrl)
+                                    Toast.makeText(context, "Actualizando...", Toast.LENGTH_SHORT).show()
+                                }
+                                clearForm()
+                            } else {
+                                Toast.makeText(context, "Faltan campos", Toast.LENGTH_SHORT).show()
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        enabled = !uiState.isLoading
+                    ) {
+                        if (uiState.isLoading) CircularProgressIndicator(modifier = Modifier.size(20.dp), color = Color.White)
+                        else Text(if (editingProductId == null) "Agregar Producto" else "Guardar Cambios")
+                    }
+
+                    if (editingProductId != null) {
+                        TextButton(onClick = { clearForm() }, modifier = Modifier.fillMaxWidth()) {
+                            Text("Cancelar Edición")
                         }
                     }
                 }
+            }
 
-                Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-                Button(
-                    onClick = {
-                        val price = priceText.toDoubleOrNull() ?: 0.0
-                        if (name.isNotBlank() && price > 0.0) {
-                            if (editingProductId == null) {
-                                viewModel.addProduct(name.trim(), price, description.trim(), selectedCategory)
-                            } else {
-                                val updated = Product(
-                                    id = editingProductId!!,
-                                    name = name.trim(),
-                                    price = price,
-                                    description = description.trim(),
-                                    category = selectedCategory
-                                )
-                                viewModel.updateProduct(updated)
-                                editingProductId = null
-                            }
-                            name = ""
-                            priceText = ""
-                            description = ""
-                            selectedCategory = ProductCategory.INVIERNO
-                        }
-                    },
-                    modifier = Modifier.fillMaxWidth()
+            // --- LISTA DE PRODUCTOS ---
+            if (uiState.isLoading && uiState.productList.isEmpty()) {
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
+            } else {
+                LazyColumn(
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    contentPadding = PaddingValues(bottom = 16.dp)
                 ) {
-                    Text(if (editingProductId == null) "Agregar Producto" else "Actualizar Producto")
-                }
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                Text("Inventario", style = MaterialTheme.typography.titleMedium)
-                Spacer(modifier = Modifier.height(8.dp))
-
-                LazyColumn {
-                    items(productList) { product ->
+                    items(uiState.productList) { product ->
                         Card(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 4.dp),
-                            elevation = CardDefaults.cardElevation(4.dp),
-                            colors = CardDefaults.cardColors(containerColor = Color(0xFFF5F5F5)) // Gris claro para las tarjetas
+                            modifier = Modifier.fillMaxWidth(),
+                            elevation = CardDefaults.cardElevation(2.dp),
+                            colors = CardDefaults.cardColors(containerColor = Color(0xFFFAFAFA))
                         ) {
                             Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(12.dp),
-                                horizontalArrangement = Arrangement.SpaceBetween
+                                modifier = Modifier.padding(12.dp).fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
+                                // Imagen del producto
+                                AsyncImage(
+                                    model = product.image?.url ?: "https://via.placeholder.com/150",
+                                    contentDescription = null,
+                                    modifier = Modifier.size(60.dp).clip(RoundedCornerShape(8.dp)).background(Color.LightGray),
+                                    contentScale = ContentScale.Crop
+                                )
+
+                                Spacer(modifier = Modifier.width(12.dp))
+
                                 Column(modifier = Modifier.weight(1f)) {
-                                    Text(product.name, style = MaterialTheme.typography.titleMedium)
-                                    Text("Precio: $${product.price}")
-                                    Text("Categoría: ${product.category}")
-                                    Text("Descripción: ${product.description}")
+                                    Text(product.name, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyLarge)
+                                    Text("$${product.price} - Stock: ${product.stock}", style = MaterialTheme.typography.bodyMedium)
+                                    Text("${product.category?.nombre} | ${product.brand?.nombre} | ${product.size?.nombre}", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
                                 }
 
-                                Row {
-                                    IconButton(onClick = {
-                                        editingProductId = product.id
-                                        name = product.name
-                                        priceText = product.price.toString()
-                                        description = product.description
-                                        selectedCategory = product.category
-                                    }) {
-                                        Icon(Icons.Default.Edit, contentDescription = "Editar")
-                                    }
-
-                                    IconButton(onClick = { viewModel.deleteProduct(product) }) {
-                                        Icon(Icons.Default.Delete, contentDescription = "Eliminar", tint = Color.Red)
-                                    }
+                                // Botones de acción
+                                IconButton(onClick = { loadProductForEdit(product) }) {
+                                    Icon(Icons.Default.Edit, contentDescription = "Editar", tint = MaterialTheme.colorScheme.primary)
+                                }
+                                IconButton(onClick = { viewModel.deleteProduct(product) }) {
+                                    Icon(Icons.Default.Delete, contentDescription = "Borrar", tint = MaterialTheme.colorScheme.error)
                                 }
                             }
                         }
