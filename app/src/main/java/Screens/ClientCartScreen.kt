@@ -183,7 +183,7 @@ fun ClientCartScreen(viewModel: ProductViewModel) {
                         // AQUÍ LLAMAMOS A LA API REAL
                         viewModel.performCheckout(quantities) {
                             scope.launch {
-                                snackbarHostState.showSnackbar("¡Compra realizada con éxito! 🎉")
+                                snackbarHostState.showSnackbar("¡Compra realizada con éxito! ")
                             }
                         }
                     },
