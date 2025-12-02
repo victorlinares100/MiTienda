@@ -27,9 +27,13 @@ fun ClientCartScreen(viewModel: ProductViewModel) {
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
 
-    // CAMBIO: El ID ahora es Long, así que el mapa es <Long, Int>
+    // 1. OBSERVAMOS EL ESTADO (Para saber si está cargando o hubo error)
+    val uiState by viewModel.uiState.collectAsState()
+
+    // Mapa de cantidades <ID_Producto, Cantidad>
     val quantities = remember { mutableStateMapOf<Long, Int>() }
 
+    // Calculamos el total dinámicamente
     val total = viewModel.cart.sumOf { product ->
         val qty = quantities[product.id] ?: 1
         product.price * qty
@@ -70,7 +74,7 @@ fun ClientCartScreen(viewModel: ProductViewModel) {
                                     .padding(12.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                // FOTO DEL PRODUCTO EN EL CARRITO
+                                // FOTO
                                 AsyncImage(
                                     model = product.image?.url ?: "https://via.placeholder.com/150",
                                     contentDescription = null,
@@ -83,6 +87,7 @@ fun ClientCartScreen(viewModel: ProductViewModel) {
 
                                 Spacer(modifier = Modifier.width(12.dp))
 
+                                // DATOS
                                 Column(modifier = Modifier.weight(1f)) {
                                     Text(product.name, style = MaterialTheme.typography.titleMedium)
                                     Text("Unitario: $${product.price}", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
@@ -94,16 +99,14 @@ fun ClientCartScreen(viewModel: ProductViewModel) {
                                         horizontalArrangement = Arrangement.SpaceBetween,
                                         modifier = Modifier.fillMaxWidth()
                                     ) {
-                                        // 🔹 Botones de cantidad
+                                        // Botones de cantidad
                                         Row(verticalAlignment = Alignment.CenterVertically) {
                                             IconButton(
                                                 onClick = {
                                                     if (qty > 1) {
                                                         quantities[product.id] = qty - 1
                                                     } else {
-                                                        scope.launch {
-                                                            snackbarHostState.showSnackbar("Mínimo 1 unidad")
-                                                        }
+                                                        scope.launch { snackbarHostState.showSnackbar("Mínimo 1 unidad") }
                                                     }
                                                 },
                                                 modifier = Modifier.size(30.dp)
@@ -132,9 +135,7 @@ fun ClientCartScreen(viewModel: ProductViewModel) {
                                             IconButton(onClick = {
                                                 viewModel.removeFromCart(product)
                                                 quantities.remove(product.id)
-                                                scope.launch {
-                                                    snackbarHostState.showSnackbar("Eliminado")
-                                                }
+                                                scope.launch { snackbarHostState.showSnackbar("Eliminado") }
                                             }) {
                                                 Icon(Icons.Default.Delete, contentDescription = "Eliminar", tint = Color.Red)
                                             }
@@ -150,6 +151,7 @@ fun ClientCartScreen(viewModel: ProductViewModel) {
                 Divider()
                 Spacer(modifier = Modifier.height(12.dp))
 
+                // Total
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -165,15 +167,39 @@ fun ClientCartScreen(viewModel: ProductViewModel) {
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
+
+                // 2. MOSTRAR ERRORES SI OCURREN
+                if (uiState.errorMessage != null) {
+                    Text(
+                        text = uiState.errorMessage ?: "",
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                }
+
+                // 3. BOTÓN DE PAGO CONECTADO
                 Button(
                     onClick = {
-                        scope.launch {
-                            snackbarHostState.showSnackbar("¡Compra simulada exitosa! 🎉")
+                        // AQUÍ LLAMAMOS A LA API REAL
+                        viewModel.performCheckout(quantities) {
+                            scope.launch {
+                                snackbarHostState.showSnackbar("¡Compra realizada con éxito! 🎉")
+                            }
                         }
                     },
-                    modifier = Modifier.fillMaxWidth().height(50.dp)
+                    modifier = Modifier.fillMaxWidth().height(50.dp),
+                    enabled = !uiState.isLoading // Deshabilitar si está cargando
                 ) {
-                    Text("Pagar Ahora")
+                    if (uiState.isLoading) {
+                        CircularProgressIndicator(
+                            color = Color.White,
+                            modifier = Modifier.size(24.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Procesando...")
+                    } else {
+                        Text("Pagar Ahora")
+                    }
                 }
             } else {
                 Box(

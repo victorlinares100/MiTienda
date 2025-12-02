@@ -1,6 +1,7 @@
 package com.example.mitienda
 
 import Data.ProductRepository
+import Data.CarritoRepository // <--- ¡Nuevo Import!
 import Data.UserRepository
 import Model.Rol
 import android.os.Bundle
@@ -18,11 +19,11 @@ import ViewModel.ViewModelFactory
 class MainActivity : ComponentActivity() {
 
     // --- CAMBIO IMPORTANTE AQUÍ ---
-    // Ya no usamos AppDatabase ni Dao.
-    // El repositorio se inicializa vacío: ProductRepository()
+    // Ahora pasamos AMBOS repositorios a la fábrica
     private val productViewModel: ProductViewModel by viewModels {
         ViewModelFactory(
-            ProductRepository()
+            ProductRepository(),
+            CarritoRepository() // <--- Agregamos esta línea
         )
     }
 

@@ -37,8 +37,8 @@ interface ApiService {
     @GET("api/v1/tallas")
     suspend fun getTallas(): Response<List<Talla>>
 
-    // --- IMGBB (Subida de Imágenes) ---
-    // Usaremos la URL directa para no depender de la baseURL principal
+    @POST("api/v1/comprobantes/carrito")
+    suspend fun procesarCompra(@Body request: CarritoRequest): Response<ComprobanteResponse>
     @Multipart
     @POST
     suspend fun uploadImage(
