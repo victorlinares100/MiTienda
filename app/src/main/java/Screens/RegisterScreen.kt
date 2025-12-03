@@ -69,7 +69,7 @@ fun RegisterScreen(
                 verticalArrangement = Arrangement.Center
             ) {
                 Text(
-                    text = "Create\nAccount",
+                    text = "Crear\nCuenta",
                     style = MaterialTheme.typography.displayMedium,
                     color = Color.White,
                     fontWeight = FontWeight.Bold
@@ -94,7 +94,7 @@ fun RegisterScreen(
                     ModernTextField(value = nombre, onValueChange = { nombre = it }, label = "Nombre Completo")
                     Spacer(Modifier.height(12.dp))
 
-                    ModernTextField(value = correo, onValueChange = { correo = it }, label = "Email", keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email))
+                    ModernTextField(value = correo, onValueChange = { correo = it }, label = "Correo", keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email))
                     Spacer(Modifier.height(12.dp))
 
                     ModernTextField(value = pass, onValueChange = { pass = it }, label = "Contraseña", visualTransformation = PasswordVisualTransformation())
@@ -118,7 +118,7 @@ fun RegisterScreen(
                         CircularProgressIndicator(color = BluePrimary)
                     } else {
                         ModernButton(
-                            text = "Sign Up",
+                            text = "Registrarse",
                             onClick = {
                                 viewModel.registrar(nombre, correo, pass, confirmPass, region, comuna)
                             }

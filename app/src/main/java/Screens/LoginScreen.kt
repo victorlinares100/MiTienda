@@ -59,7 +59,7 @@ fun LoginScreen(
                 horizontalAlignment = Alignment.Start
             ) {
                 Text(
-                    text = "Welcome\nBack!",
+                    text = "Bienvenido!",
                     style = MaterialTheme.typography.displayMedium,
                     color = Color.White,
                     fontWeight = FontWeight.Bold
@@ -89,7 +89,7 @@ fun LoginScreen(
                     ModernTextField(
                         value = email,
                         onValueChange = { email = it },
-                        label = "Email",
+                        label = "Ingrese su Correo",
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
                     )
 
@@ -98,7 +98,7 @@ fun LoginScreen(
                     ModernTextField(
                         value = password,
                         onValueChange = { password = it },
-                        label = "Password",
+                        label = "Ingrese su Contraseña",
                         visualTransformation = PasswordVisualTransformation()
                     )
 
@@ -108,7 +108,7 @@ fun LoginScreen(
                         CircularProgressIndicator(color = BluePrimary)
                     } else {
                         ModernButton(
-                            text = "Sign In",
+                            text = "Iniciar Sesión",
                             onClick = { viewModel.login(email.trim(), password.trim(), onLoginSuccess) }
                         )
                     }
@@ -127,6 +127,8 @@ fun LoginScreen(
                             Text("Regístrate", color = BluePrimary, fontWeight = FontWeight.Bold)
                         }
                     }
+
+                    Spacer(modifier = Modifier.height(40.dp))
                 }
             }
         }
