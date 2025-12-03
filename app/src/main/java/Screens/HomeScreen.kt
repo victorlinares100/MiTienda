@@ -5,19 +5,26 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AddShoppingCart
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import ViewModel.ProductViewModel
 import Model.Product
 import coil.compose.AsyncImage
+import com.example.mitienda.theme.*
 
 @Composable
 fun HomeScreen(
@@ -36,141 +43,115 @@ fun HomeScreen(
             onBack = { selectedProduct = null }
         )
     } else {
-        Surface(
-            modifier = Modifier.fillMaxSize(),
-            color = MaterialTheme.colorScheme.background
+        // Ya no necesitamos Surface ni el Header Box aquí, porque vienen de TiendaApp
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 16.dp)
+                // TRUCO VISUAL: Subimos el contenido (-30dp) para que se superponga al header de TiendaApp
+                .offset(y = (-30).dp)
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp)
+
+            // Subtítulo de sección (Opcional, o puedes quitarlo)
+            Card(
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                shape = RoundedCornerShape(50),
+                elevation = CardDefaults.cardElevation(4.dp),
+                modifier = Modifier.padding(bottom = 16.dp)
             ) {
-                // --- ENCABEZADO ---
                 Text(
-                    text = "¡Bienvenido a Mi Tienda!",
-                    style = MaterialTheme.typography.headlineMedium,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.fillMaxWidth(),
-                    textAlign = TextAlign.Center
+                    text = "Destacados de temporada",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = BlueDarkBackground,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
                 )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = "Lo mejor en ropa deportiva.",
-                    style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.fillMaxWidth(),
-                    textAlign = TextAlign.Center,
-                    color = Color.Gray
-                )
+            }
 
-                Spacer(modifier = Modifier.height(24.dp))
-                Text("Destacados", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                Spacer(modifier = Modifier.height(16.dp))
+            // --- GRILLA ---
+            if (products.isNotEmpty()) {
+                val featured = products.take(6)
 
-                // --- GRILLA DE PRODUCTOS (El cambio principal) ---
-                if (products.isNotEmpty()) {
-                    // Tomamos los primeros 6 para mostrar en el Home
-                    val featured = products.take(6)
-
-                    // LazyVerticalGrid crea las columnas (2 columnas fijas)
-                    LazyVerticalGrid(
-                        columns = GridCells.Fixed(2), // 2 Columnas
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp),
-                        modifier = Modifier
-                            .weight(1f) // Esto hace que la grilla ocupe todo el espacio disponible al medio
-                            .fillMaxWidth()
-                    ) {
-                        items(featured) { product ->
-                            FeaturedProductCard(
-                                product = product,
-                                onDetail = { selectedProduct = product }
-                            )
-                        }
-                    }
-                } else {
-                    // Estado vacío
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .fillMaxWidth(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        CircularProgressIndicator()
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(2),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    contentPadding = PaddingValues(bottom = 16.dp),
+                    modifier = Modifier.weight(1f)
+                ) {
+                    items(featured) { product ->
+                        FeaturedProductCardModern(
+                            product = product,
+                            onDetail = { selectedProduct = product },
+                            onQuickAdd = { viewModel.addToCart(product) }
+                        )
                     }
                 }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // --- BOTÓN INFERIOR ---
-                Button(
-                    onClick = { onGoToCatalog?.invoke() },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(50.dp)
+            } else {
+                Box(
+                    modifier = Modifier.weight(1f).fillMaxWidth(),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Text("Ver Catálogo Completo")
+                    CircularProgressIndicator(color = BluePrimary)
                 }
             }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // --- BOTÓN GRANDE ---
+            Button(
+                onClick = { onGoToCatalog?.invoke() },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp)
+                    .shadow(8.dp, RoundedCornerShape(16.dp)),
+                shape = RoundedCornerShape(16.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = BluePrimary)
+            ) {
+                Text(
+                    text = "Ver Catálogo Completo",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+            Spacer(modifier = Modifier.height(20.dp))
         }
     }
 }
 
+// ... La función FeaturedProductCardModern SE QUEDA IGUAL, no hace falta cambiarla ...
 @Composable
-private fun FeaturedProductCard(product: Product, onDetail: () -> Unit) {
+private fun FeaturedProductCardModern(
+    product: Product,
+    onDetail: () -> Unit,
+    onQuickAdd: () -> Unit
+) {
+    // ... (Pega aquí el mismo código de FeaturedProductCardModern que te pasé en la respuesta anterior) ...
+    // Te lo resumo aquí para que el archivo esté completo:
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(260.dp), // Altura fija para que todas las tarjetas sean iguales
-        elevation = CardDefaults.cardElevation(4.dp),
+        modifier = Modifier.fillMaxWidth().height(240.dp),
+        shape = RoundedCornerShape(16.dp),
+        elevation = CardDefaults.cardElevation(6.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
-        // Le damos clic a toda la tarjeta
         onClick = onDetail
     ) {
         Column {
-            // --- IMAGEN (Ahora sí se ve) ---
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(140.dp) // La imagen ocupa la mitad superior
-                    .background(Color.LightGray)
-            ) {
-                AsyncImage(
-                    model = product.image?.url ?: "https://via.placeholder.com/150",
-                    contentDescription = product.name,
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop // Recorta la imagen para llenar el cuadro
-                )
-            }
-
-            // --- TEXTOS ---
-            Column(
-                modifier = Modifier
-                    .padding(12.dp)
-                    .fillMaxSize(),
-                verticalArrangement = Arrangement.SpaceBetween
-            ) {
-                Column {
-                    Text(
-                        text = product.name,
-                        style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.Bold,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = product.brand?.nombre ?: "Genérico",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = Color.Gray
-                    )
+            Box(Modifier.fillMaxWidth().height(130.dp).background(Color(0xFFF0F0F0))) {
+                AsyncImage(model = product.image?.url, contentDescription = null, modifier = Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
+                Surface(Modifier.align(Alignment.TopStart).padding(8.dp), shape = RoundedCornerShape(8.dp), color = BlueDarkBackground.copy(alpha = 0.8f)) {
+                    Text(product.category?.nombre ?: "Varios", color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp))
                 }
-
-                Text(
-                    text = "$${product.price}",
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.primary,
-                    fontWeight = FontWeight.Bold
-                )
+            }
+            Column(Modifier.padding(12.dp).fillMaxSize(), verticalArrangement = Arrangement.SpaceBetween) {
+                Column {
+                    Text(product.name, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis, color = Color.Black)
+                    Text(product.brand?.nombre ?: "Genérico", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+                }
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                    Text("$${product.price.toInt()}", style = MaterialTheme.typography.titleMedium, color = BluePrimary, fontWeight = FontWeight.ExtraBold)
+                    IconButton(onClick = onQuickAdd, modifier = Modifier.size(32.dp).clip(CircleShape).background(BlueLightBackground.copy(alpha = 0.1f))) {
+                        Icon(Icons.Default.AddShoppingCart, "Add", tint = BluePrimary, modifier = Modifier.size(18.dp))
+                    }
+                }
             }
         }
     }

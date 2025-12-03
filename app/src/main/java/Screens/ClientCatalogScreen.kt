@@ -1,15 +1,31 @@
 package Screens
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import ViewModel.ProductViewModel
 import Model.Product
 import androidx.compose.runtime.collectAsState
+import com.example.mitienda.theme.* // Importamos tus colores: BluePrimary, InputBorder, etc.
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -17,59 +33,149 @@ fun ClientCatalogScreen(viewModel: ProductViewModel) {
 
     val uiState by viewModel.uiState.collectAsState()
     val allProducts = uiState.productList
-    val categorias = uiState.categorias // Obtenemos las categorías de la API
+    val categorias = uiState.categorias
 
-    // Ahora filtramos por ID (Long) en vez de Enum
     var selectedCategoryId: Long? by remember { mutableStateOf(null) }
+    var searchQuery by remember { mutableStateOf("") }
 
-    // Lógica de filtrado
-    val filteredProducts: List<Product> = remember(allProducts, selectedCategoryId) {
-        if (selectedCategoryId == null) {
-            allProducts // Mostrar todos
-        } else {
-            // Filtramos si el ID de la categoría del producto coincide con el seleccionado
-            allProducts.filter { it.category?.id == selectedCategoryId }
+    val filteredProducts: List<Product> = remember(allProducts, selectedCategoryId, searchQuery) {
+        allProducts.filter { product ->
+            val matchesCategory = selectedCategoryId == null || product.category?.id == selectedCategoryId
+            val matchesSearch = product.name.contains(searchQuery, ignoreCase = true)
+            matchesCategory && matchesSearch
         }
     }
 
-    Column(modifier = Modifier.fillMaxSize()) {
+    // Fondo gris claro
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = Color(0xFFF5F7FA)
+    ) {
+        Column(modifier = Modifier.fillMaxSize()) {
 
-        // --- BARRA DE FILTROS DE CATEGORÍA ---
-        if (uiState.isLoading) {
-            LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
-        }
+            // --- CABECERA BLANCA ---
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color.White)
+                    .padding(16.dp)
+            ) {
+                // BARRA DE BÚSQUEDA (Con colores personalizados)
+                OutlinedTextField(
+                    value = searchQuery,
+                    onValueChange = { searchQuery = it },
+                    placeholder = { Text("Buscar productos...", color = TextGray) },
+                    leadingIcon = {
+                        Icon(Icons.Default.Search, contentDescription = null, tint = BluePrimary)
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(52.dp),
+                    shape = RoundedCornerShape(26.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        // AQUÍ CAMBIAMOS EL MORADO POR AZUL
+                        focusedBorderColor = BluePrimary,
+                        unfocusedBorderColor = InputBorder,
+                        focusedContainerColor = Color(0xFFF5F7FA),
+                        unfocusedContainerColor = Color(0xFFF5F7FA),
+                        cursorColor = BluePrimary, // El palito que parpadea
+                        focusedTextColor = Color.Black,
+                        unfocusedTextColor = Color.Black
+                    ),
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search)
+                )
 
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .horizontalScroll(rememberScrollState())
-                .padding(vertical = 8.dp, horizontal = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            // Chip "Todos"
-            FilterChip(
-                selected = selectedCategoryId == null,
-                onClick = { selectedCategoryId = null },
-                label = { Text("Todos") }
-            )
+                Spacer(modifier = Modifier.height(16.dp))
 
-            // Chips dinámicos desde la API
-            categorias.forEach { category ->
-                FilterChip(
-                    selected = selectedCategoryId == category.id,
-                    onClick = { selectedCategoryId = category.id },
-                    label = { Text(category.nombre) }
+                // FILTROS (Pills)
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .horizontalScroll(rememberScrollState()),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    CategoryPill(
+                        text = "Todos",
+                        isSelected = selectedCategoryId == null,
+                        onClick = { selectedCategoryId = null }
+                    )
+
+                    categorias.forEach { category ->
+                        CategoryPill(
+                            text = category.nombre,
+                            isSelected = selectedCategoryId == category.id,
+                            onClick = { selectedCategoryId = category.id }
+                        )
+                    }
+                }
+            }
+
+            // --- CONTADOR ---
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "${filteredProducts.size} Resultados",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = TextGray,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                Icon(
+                    imageVector = Icons.Default.Tune,
+                    contentDescription = "Filtrar",
+                    tint = TextGray,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+
+            // --- LISTA ---
+            if (uiState.isLoading) {
+                Box(Modifier.fillMaxWidth().padding(20.dp), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator(color = BluePrimary)
+                }
+            } else {
+                ProductList(
+                    products = filteredProducts,
+                    isClientView = true,
+                    onAddToCart = { product -> viewModel.addToCart(product) }
                 )
             }
         }
+    }
+}
 
-        Divider()
-
-        // Reutilizamos la lista que ya arreglamos antes
-        ProductList(
-            products = filteredProducts,
-            isClientView = true,
-            onAddToCart = { product -> viewModel.addToCart(product) }
+// --- PÍLDORA CON COLORES AZULES ---
+@Composable
+fun CategoryPill(
+    text: String,
+    isSelected: Boolean,
+    onClick: () -> Unit
+) {
+    Surface(
+        modifier = Modifier
+            .clip(RoundedCornerShape(50))
+            .clickable { onClick() }
+            .border(
+                width = 1.dp,
+                // Borde Azul si está seleccionado, Gris si no
+                color = if (isSelected) BluePrimary else InputBorder,
+                shape = RoundedCornerShape(50)
+            ),
+        // Fondo Azul si está seleccionado
+        color = if (isSelected) BluePrimary else Color.White,
+        contentColor = if (isSelected) Color.White else TextGray
+    ) {
+        Text(
+            text = text,
+            modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp),
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
         )
     }
 }

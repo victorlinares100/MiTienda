@@ -16,6 +16,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import com.example.mitienda.theme.BluePrimary // Importamos el azul
 
 @Composable
 fun ProductList(
@@ -24,24 +25,19 @@ fun ProductList(
     onAddToCart: (Product) -> Unit
 ) {
     if (products.isEmpty()) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(32.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            CircularProgressIndicator() // O Text("No hay productos") si no está cargando
+        Box(modifier = Modifier.fillMaxWidth().padding(32.dp), contentAlignment = Alignment.Center) {
+            Text("No se encontraron productos", color = Color.Gray)
         }
     } else {
         LazyColumn(
-            contentPadding = PaddingValues(bottom = 80.dp) // Espacio para que no lo tape la barra de abajo
+            contentPadding = PaddingValues(bottom = 80.dp)
         ) {
             items(products) { product ->
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
-                    elevation = CardDefaults.cardElevation(4.dp),
+                        .padding(horizontal = 16.dp, vertical = 6.dp), // Menos espacio vertical
+                    elevation = CardDefaults.cardElevation(2.dp), // Sombra más suave
                     colors = CardDefaults.cardColors(containerColor = Color.White)
                 ) {
                     Row(
@@ -50,55 +46,56 @@ fun ProductList(
                             .padding(12.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        // --- IMAGEN DEL PRODUCTO ---
+                        // Imagen
                         AsyncImage(
                             model = product.image?.url ?: "https://via.placeholder.com/150",
                             contentDescription = product.name,
                             modifier = Modifier
                                 .size(80.dp)
                                 .clip(RoundedCornerShape(8.dp))
-                                .background(Color.LightGray),
+                                .background(Color(0xFFF0F0F0)),
                             contentScale = ContentScale.Crop
                         )
 
                         Spacer(modifier = Modifier.width(16.dp))
 
-                        // --- INFO DEL PRODUCTO ---
+                        // Info
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
                                 text = product.name,
                                 style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold
+                                fontWeight = FontWeight.Bold,
+                                color = Color.Black
                             )
 
+                            // PRECIO EN AZUL
                             Text(
                                 text = "$${product.price}",
                                 style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.primary
+                                color = BluePrimary,
+                                fontWeight = FontWeight.ExtraBold
                             )
 
-                            // Mostramos Categoría y Marca en pequeño
                             Text(
                                 text = "${product.category?.nombre ?: "Sin Cat."} | ${product.brand?.nombre ?: "Genérico"}",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = Color.Gray
                             )
-
-                            // Mostramos Stock
-                            Text(
-                                text = if (product.stock > 0) "Stock: ${product.stock}" else "Agotado",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = if (product.stock > 0) Color.DarkGray else Color.Red
-                            )
                         }
 
-                        // --- BOTÓN AGREGAR ---
+                        // BOTÓN EN AZUL
                         if (isClientView) {
                             Button(
                                 onClick = { onAddToCart(product) },
-                                enabled = product.stock > 0 // Solo si hay stock
+                                enabled = product.stock > 0,
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = BluePrimary, // Azul
+                                    disabledContainerColor = Color.LightGray
+                                ),
+                                shape = RoundedCornerShape(8.dp),
+                                contentPadding = PaddingValues(horizontal = 12.dp)
                             ) {
-                                Text("Add")
+                                Text("Añadir")
                             }
                         }
                     }
