@@ -58,6 +58,7 @@ dependencies {
     implementation("androidx.activity:activity-compose:1.9.2")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.6")
     implementation(libs.engage.core)
+    implementation(libs.androidx.ui.graphics)
 
     debugImplementation("androidx.compose.ui:ui-tooling:1.7.5")
     implementation("androidx.compose.material:material-icons-extended:1.7.5")

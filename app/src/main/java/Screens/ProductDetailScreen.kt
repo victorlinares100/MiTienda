@@ -15,9 +15,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import com.example.mitienda.theme.* // Importamos tus colores
 
 @Composable
 fun ProductDetailScreen(
@@ -25,98 +27,150 @@ fun ProductDetailScreen(
     viewModel: ProductViewModel,
     onBack: () -> Unit
 ) {
+    // Usamos el color de fondo gris claro (F5F7FA)
     Surface(
         modifier = Modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.background
+        color = Color(0xFFF5F7FA)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp)
-                .verticalScroll(rememberScrollState()), // Scroll por si la pantalla es chica
+                .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
-            // --- IMAGEN GRANDE ---
+            // --- 1. IMAGEN GRANDE ---
             AsyncImage(
                 model = product.image?.url ?: "https://via.placeholder.com/300",
                 contentDescription = product.name,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(300.dp)
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(Color.LightGray),
+                    .height(350.dp) // Un poco más alta
+                    .clip(RoundedCornerShape(bottomStart = 24.dp, bottomEnd = 24.dp)) // Curva solo abajo
+                    .background(Color.White), // Fondo blanco detrás de la imagen
                 contentScale = ContentScale.Crop
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // --- TÍTULO Y PRECIO ---
-            Text(
-                text = product.name,
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center
-            )
-
-            Text(
-                text = "$${product.price}",
-                style = MaterialTheme.typography.headlineSmall,
-                color = MaterialTheme.colorScheme.primary
-            )
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // --- TARJETA DE DETALLES ---
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+            // Espacio con padding horizontal
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp, vertical = 24.dp)
             ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    DetailRow("Categoría", product.category?.nombre ?: "N/A")
-                    Divider(modifier = Modifier.padding(vertical = 8.dp))
-                    DetailRow("Marca", product.brand?.nombre ?: "N/A")
-                    Divider(modifier = Modifier.padding(vertical = 8.dp))
-                    DetailRow("Talla", product.size?.nombre ?: "N/A")
-                    Divider(modifier = Modifier.padding(vertical = 8.dp))
-                    DetailRow("Stock Disponible", product.stock.toString())
+
+                // --- 2. TÍTULO Y PRECIO ---
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = product.name,
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = BlueDarkBackground,
+                        modifier = Modifier.weight(1f)
+                    )
+                    Text(
+                        text = "$${product.price.toInt()}",
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontWeight = FontWeight.ExtraBold,
+                        color = BluePrimary // Color de marca para el precio
+                    )
                 }
-            }
 
-            Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(24.dp))
 
-            // --- BOTONES ---
-            Button(
-                onClick = {
-                    viewModel.addToCart(product)
-                    onBack() // Volvemos al catálogo tras agregar
-                },
-                modifier = Modifier.fillMaxWidth().height(50.dp),
-                enabled = product.stock > 0
-            ) {
-                Text(if (product.stock > 0) "Agregar al Carrito" else "Agotado")
-            }
+                // --- 3. TARJETA DE DETALLES ---
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    elevation = CardDefaults.cardElevation(4.dp),
+                    // Tarjeta blanca para el contenido sobre el fondo gris
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    shape = RoundedCornerShape(16.dp)
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text(
+                            text = "Especificaciones",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            color = BlueDarkBackground
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
 
-            Spacer(modifier = Modifier.height(12.dp))
+                        DetailRow("Categoría", product.category?.nombre ?: "N/A")
+                        Divider(modifier = Modifier.padding(vertical = 8.dp), color = InputBorder)
+                        DetailRow("Marca", product.brand?.nombre ?: "N/A")
+                        Divider(modifier = Modifier.padding(vertical = 8.dp), color = InputBorder)
+                        DetailRow("Talla", product.size?.nombre ?: "N/A")
+                        Divider(modifier = Modifier.padding(vertical = 8.dp), color = InputBorder)
+                        DetailRow("Stock Disponible", product.stock.toString(), isStock = true, stock = product.stock)
+                    }
+                }
 
-            OutlinedButton(
-                onClick = { onBack() },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Volver al Catálogo")
+                Spacer(modifier = Modifier.height(32.dp))
+
+                // --- 4. BOTONES DE ACCIÓN ---
+                Button(
+                    onClick = {
+                        viewModel.addToCart(product)
+                        onBack()
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp)
+                        .clip(RoundedCornerShape(16.dp)), // Botón redondeado
+                    enabled = product.stock > 0,
+                    // Color de marca
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = BluePrimary,
+                        disabledContainerColor = Color.LightGray
+                    )
+                ) {
+                    Text(
+                        if (product.stock > 0) "Agregar al Carrito" else "Agotado",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                OutlinedButton(
+                    onClick = { onBack() },
+                    modifier = Modifier.fillMaxWidth().height(56.dp),
+                    shape = RoundedCornerShape(16.dp), // Botón redondeado
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = TextGray),
+                    border = ButtonDefaults.outlinedButtonBorder.copy(brush = SolidColor(InputBorder))
+                ) {
+                    Text("Volver al Catálogo", fontWeight = FontWeight.SemiBold)
+                }
+
+                Spacer(modifier = Modifier.height(32.dp))
             }
         }
     }
 }
 
-// Helper pequeño para las filas de detalles
+// Helper actualizado con colores y lógica de stock
 @Composable
-fun DetailRow(label: String, value: String) {
+fun DetailRow(label: String, value: String, isStock: Boolean = false, stock: Int = 0) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Text(text = label, fontWeight = FontWeight.SemiBold)
-        Text(text = value)
+        Text(text = label, fontWeight = FontWeight.SemiBold, color = BlueDarkBackground)
+        Text(
+            text = value,
+            fontWeight = if (isStock) FontWeight.Bold else FontWeight.Normal,
+            // Si es stock, usa color rojo/verde
+            color = if (isStock) {
+                if (stock > 5) SuccessGreen
+                else if (stock > 0) WarningOrange
+                else ErrorRed
+            } else {
+                TextGray
+            }
+        )
     }
 }

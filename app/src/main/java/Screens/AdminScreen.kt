@@ -7,9 +7,7 @@ import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -23,13 +21,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
-import coil.compose.rememberAsyncImagePainter
+import com.example.mitienda.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -94,8 +93,9 @@ fun AdminScreen(
         topBar = {
             CenterAlignedTopAppBar(
                 title = { Text("Administración de Productos") },
+                // --- COLOR DE CABECERA PERSONALIZADO ---
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
+                    containerColor = BlueDarkBackground, // Usamos el azul oscuro
                     titleContentColor = Color.White,
                     actionIconContentColor = Color.White
                 ),
@@ -111,13 +111,15 @@ fun AdminScreen(
             modifier = Modifier
                 .padding(padding)
                 .fillMaxSize()
+                // --- FONDO GRIS CLARO PARA EL CONTENIDO ---
+                .background(Color(0xFFF5F7FA))
                 .padding(16.dp)
         ) {
             // --- FORMULARIO ---
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 elevation = CardDefaults.cardElevation(4.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White)
+                colors = CardDefaults.cardColors(containerColor = Color.White) // Formulario Blanco
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(if (editingProductId == null) "Nuevo Producto" else "Editar Producto", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
@@ -127,12 +129,17 @@ fun AdminScreen(
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         OutlinedTextField(
                             value = name, onValueChange = { name = it },
-                            label = { Text("Nombre") }, modifier = Modifier.weight(1f)
+                            label = { Text("Nombre") },
+                            modifier = Modifier.weight(1f),
+                            // --- COLOR DEL TEXT FIELD ---
+                            colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = BluePrimary, cursorColor = BluePrimary)
                         )
                         OutlinedTextField(
                             value = stockText, onValueChange = { stockText = it },
                             label = { Text("Stock") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                            modifier = Modifier.width(100.dp)
+                            modifier = Modifier.width(100.dp),
+                            // --- COLOR DEL TEXT FIELD ---
+                            colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = BluePrimary, cursorColor = BluePrimary)
                         )
                     }
 
@@ -140,7 +147,9 @@ fun AdminScreen(
                     OutlinedTextField(
                         value = priceText, onValueChange = { priceText = it },
                         label = { Text("Precio") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
+                        // --- COLOR DEL TEXT FIELD ---
+                        colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = BluePrimary, cursorColor = BluePrimary)
                     )
 
                     Spacer(modifier = Modifier.height(8.dp))
@@ -150,7 +159,15 @@ fun AdminScreen(
                         // Categoría
                         Box(modifier = Modifier.weight(1f).padding(end = 4.dp)) {
                             val catName = uiState.categorias.find { it.id == selectedCatId }?.nombre ?: "Categoría"
-                            OutlinedButton(onClick = { catExpanded = true }, modifier = Modifier.fillMaxWidth()) {
+                            OutlinedButton(
+                                onClick = { catExpanded = true },
+                                modifier = Modifier.fillMaxWidth(),
+                                // --- COLOR DEL BOTÓN OUTLINED ---
+                                colors = ButtonDefaults.outlinedButtonColors(contentColor = TextGray),
+                                border = ButtonDefaults.outlinedButtonBorder.copy(
+                                    brush = if (catExpanded || selectedCatId != null) SolidColor(BluePrimary) else SolidColor(InputBorder)
+                                )
+                            ) {
                                 Text(catName, maxLines = 1)
                             }
                             DropdownMenu(expanded = catExpanded, onDismissRequest = { catExpanded = false }) {
@@ -163,7 +180,14 @@ fun AdminScreen(
                         // Marca
                         Box(modifier = Modifier.weight(1f).padding(horizontal = 4.dp)) {
                             val brandName = uiState.marcas.find { it.id == selectedBrandId }?.nombre ?: "Marca"
-                            OutlinedButton(onClick = { brandExpanded = true }, modifier = Modifier.fillMaxWidth()) {
+                            OutlinedButton(
+                                onClick = { brandExpanded = true },
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = ButtonDefaults.outlinedButtonColors(contentColor = TextGray),
+                                border = ButtonDefaults.outlinedButtonBorder.copy(
+                                    brush = if (brandExpanded || selectedBrandId != null) SolidColor(BluePrimary) else SolidColor(InputBorder)
+                                )
+                            ) {
                                 Text(brandName, maxLines = 1)
                             }
                             DropdownMenu(expanded = brandExpanded, onDismissRequest = { brandExpanded = false }) {
@@ -176,7 +200,14 @@ fun AdminScreen(
                         // Talla
                         Box(modifier = Modifier.weight(1f).padding(start = 4.dp)) {
                             val sizeName = uiState.tallas.find { it.id == selectedSizeId }?.nombre ?: "Talla"
-                            OutlinedButton(onClick = { sizeExpanded = true }, modifier = Modifier.fillMaxWidth()) {
+                            OutlinedButton(
+                                onClick = { sizeExpanded = true },
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = ButtonDefaults.outlinedButtonColors(contentColor = TextGray),
+                                border = ButtonDefaults.outlinedButtonBorder.copy(
+                                    brush = if (sizeExpanded || selectedSizeId != null) SolidColor(BluePrimary) else SolidColor(InputBorder)
+                                )
+                            ) {
                                 Text(sizeName, maxLines = 1)
                             }
                             DropdownMenu(expanded = sizeExpanded, onDismissRequest = { sizeExpanded = false }) {
@@ -191,7 +222,11 @@ fun AdminScreen(
 
                     // --- SELECCIONAR IMAGEN ---
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Button(onClick = { imagePickerLauncher.launch("image/*") }) {
+                        Button(
+                            onClick = { imagePickerLauncher.launch("image/*") },
+                            // --- COLOR DEL BOTÓN PRINCIPAL ---
+                            colors = ButtonDefaults.buttonColors(containerColor = BluePrimary)
+                        ) {
                             Icon(Icons.Default.Image, contentDescription = null)
                             Spacer(Modifier.width(8.dp))
                             Text("Imagen")
@@ -199,7 +234,7 @@ fun AdminScreen(
 
                         Spacer(Modifier.width(16.dp))
 
-                        // Previsualización pequeña
+                        // Previsualización pequeña (el color aquí es solo decorativo)
                         if (selectedImageUri != null) {
                             AsyncImage(
                                 model = selectedImageUri,
@@ -247,15 +282,18 @@ fun AdminScreen(
                             }
                         },
                         modifier = Modifier.fillMaxWidth(),
-                        enabled = !uiState.isLoading
+                        enabled = !uiState.isLoading,
+                        // --- COLOR DEL BOTÓN GUARDAR ---
+                        colors = ButtonDefaults.buttonColors(containerColor = BluePrimary)
                     ) {
                         if (uiState.isLoading) CircularProgressIndicator(modifier = Modifier.size(20.dp), color = Color.White)
                         else Text(if (editingProductId == null) "Agregar Producto" else "Guardar Cambios")
                     }
 
                     if (editingProductId != null) {
+                        // --- COLOR DEL TEXT BUTTON ---
                         TextButton(onClick = { clearForm() }, modifier = Modifier.fillMaxWidth()) {
-                            Text("Cancelar Edición")
+                            Text("Cancelar Edición", color = TextGray)
                         }
                     }
                 }
@@ -265,7 +303,7 @@ fun AdminScreen(
 
             // --- LISTA DE PRODUCTOS ---
             if (uiState.isLoading && uiState.productList.isEmpty()) {
-                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator(color = BluePrimary) }
             } else {
                 LazyColumn(
                     verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -275,7 +313,8 @@ fun AdminScreen(
                         Card(
                             modifier = Modifier.fillMaxWidth(),
                             elevation = CardDefaults.cardElevation(2.dp),
-                            colors = CardDefaults.cardColors(containerColor = Color(0xFFFAFAFA))
+                            // --- COLOR DE TARJETA LIGERAMENTE GRIS PARA CONTRASTE ---
+                            colors = CardDefaults.cardColors(containerColor = Color.White)
                         ) {
                             Row(
                                 modifier = Modifier.padding(12.dp).fillMaxWidth(),
@@ -292,17 +331,20 @@ fun AdminScreen(
                                 Spacer(modifier = Modifier.width(12.dp))
 
                                 Column(modifier = Modifier.weight(1f)) {
-                                    Text(product.name, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyLarge)
-                                    Text("$${product.price} - Stock: ${product.stock}", style = MaterialTheme.typography.bodyMedium)
-                                    Text("${product.category?.nombre} | ${product.brand?.nombre} | ${product.size?.nombre}", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+                                    Text(product.name, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyLarge, color = BlueDarkBackground)
+                                    // Precio en color de marca
+                                    Text("$${product.price} - Stock: ${product.stock}", style = MaterialTheme.typography.bodyMedium, color = BluePrimary)
+                                    Text("${product.category?.nombre} | ${product.brand?.nombre} | ${product.size?.nombre}", style = MaterialTheme.typography.bodySmall, color = TextGray)
                                 }
 
                                 // Botones de acción
                                 IconButton(onClick = { loadProductForEdit(product) }) {
-                                    Icon(Icons.Default.Edit, contentDescription = "Editar", tint = MaterialTheme.colorScheme.primary)
+                                    // --- ICONO EDITAR EN AZUL ---
+                                    Icon(Icons.Default.Edit, contentDescription = "Editar", tint = BluePrimary)
                                 }
                                 IconButton(onClick = { viewModel.deleteProduct(product) }) {
-                                    Icon(Icons.Default.Delete, contentDescription = "Borrar", tint = MaterialTheme.colorScheme.error)
+                                    // --- ICONO BORRAR EN ROJO DE ERROR ---
+                                    Icon(Icons.Default.Delete, contentDescription = "Borrar", tint = ErrorRed)
                                 }
                             }
                         }

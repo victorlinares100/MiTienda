@@ -6,13 +6,11 @@ enum class Rol {
     ADMIN, CLIENT
 }
 
-// Clase para enviar los datos del login (JSON body)
 data class LoginRequest(
     @SerializedName("correo") val correo: String,
     @SerializedName("contrasena") val contrasena: String
 )
 
-// Clase Usuario completa (mapeada a tu DB del backend)
 data class User(
     @SerializedName("id") val id: Long? = null,
     @SerializedName("nombre") val nombre: String = "",

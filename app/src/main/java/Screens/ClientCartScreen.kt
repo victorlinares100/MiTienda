@@ -135,7 +135,7 @@ fun ClientCartScreen(viewModel: ProductViewModel) {
                         Button(
                             onClick = {
                                 viewModel.performCheckout(quantities) {
-                                    scope.launch { snackbarHostState.showSnackbar("¡Compra realizada con éxito! 🎉") }
+                                    scope.launch { snackbarHostState.showSnackbar("¡Compra realizada con éxito!") }
                                 }
                             },
                             modifier = Modifier
