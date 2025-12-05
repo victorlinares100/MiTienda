@@ -8,7 +8,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import androidx.compose.material3.MaterialTheme // Importamos el tema estándar
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import Screens.LoginScreen
 import Screens.RegisterScreen
@@ -16,7 +16,7 @@ import Screens.AdminScreen
 import Screens.TiendaApp
 import ViewModel.ProductViewModel
 import ViewModel.ViewModelFactory
-import com.example.mitienda.theme.MiTiendaTheme // Importamos tu tema personalizado
+import com.example.mitienda.theme.MiTiendaTheme
 
 class MainActivity : ComponentActivity() {
 
@@ -33,9 +33,9 @@ class MainActivity : ComponentActivity() {
             var currentScreen by remember { mutableStateOf("login") }
 
             when (currentScreen) {
-                // CASO 1: LOGIN (Usamos tu diseño bonito)
+
                 "login" -> {
-                    MiTiendaTheme { // <--- APLICAMOS EL TEMA AZUL AQUÍ
+                    MiTiendaTheme {
                         LoginScreen(
                             onLoginSuccess = { rol ->
                                 if (rol == Rol.ADMIN) {
@@ -51,9 +51,9 @@ class MainActivity : ComponentActivity() {
                     }
                 }
 
-                // CASO 2: REGISTRO (Usamos tu diseño bonito)
+
                 "registro" -> {
-                    MiTiendaTheme { // <--- APLICAMOS EL TEMA AZUL AQUÍ
+                    MiTiendaTheme {
                         RegisterScreen(
                             onRegisterSuccess = {
                                 currentScreen = "login"
@@ -65,9 +65,9 @@ class MainActivity : ComponentActivity() {
                     }
                 }
 
-                // CASO 3: ADMIN (Usamos el tema estándar de Android por ahora)
+
                 "admin" -> {
-                    MaterialTheme { // <--- TEMA POR DEFECTO (Blanco/Limpio)
+                    MaterialTheme {
                         AdminScreen(
                             viewModel = productViewModel,
                             onLogout = {
@@ -78,9 +78,9 @@ class MainActivity : ComponentActivity() {
                     }
                 }
 
-                // CASO 4: CLIENTE (Usamos el tema estándar de Android por ahora)
+
                 "cliente" -> {
-                    MaterialTheme { // <--- TEMA POR DEFECTO (Blanco/Limpio)
+                    MaterialTheme {
                         TiendaApp(
                             viewModel = productViewModel,
                             onLogout = {

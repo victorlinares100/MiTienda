@@ -10,6 +10,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Remove
+import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -24,83 +25,77 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import ViewModel.ProductViewModel
 import Model.Product
-import androidx.compose.material.icons.filled.ShoppingCart
 import coil.compose.AsyncImage
 import kotlinx.coroutines.launch
 import com.example.mitienda.theme.*
-import com.google.android.engage.shopping.datamodel.ShoppingCart
-
 
 @Composable
 fun ClientCartScreen(viewModel: ProductViewModel) {
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
     val uiState by viewModel.uiState.collectAsState()
+    val groupedCartItems = remember(viewModel.cart.size) {
+        viewModel.cart
+            .groupBy { it.id }
+            .map { entry ->
+                entry.value.first() to entry.value.size
+            }
+            .sortedBy { (product, _) -> product.name }
+    }
 
-    // Estado local para cantidades
-    val quantities = remember { mutableStateMapOf<Long, Int>() }
-
-    // Calcular Total
-    val total = viewModel.cart.sumOf { product ->
-        val qty = quantities[product.id] ?: 1
-        product.price * qty
+    val total = groupedCartItems.sumOf { (product, count) ->
+        product.price * count
     }
 
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
-        containerColor = Color(0xFFF5F7FA) // Fondo General
+        containerColor = Color(0xFFF5F7FA)
     ) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            // --- TÍTULO ---
             Text(
-                text = "Tu Carrito (${viewModel.cart.size})",
+                text = "Tu Carrito (${groupedCartItems.size} ítems únicos)",
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold,
                 color = BlueDarkBackground,
                 modifier = Modifier.padding(start = 24.dp, top = 24.dp, bottom = 16.dp)
             )
 
-            if (viewModel.cart.isNotEmpty()) {
-                // --- LISTA DE PRODUCTOS ---
+            if (groupedCartItems.isNotEmpty()) {
                 LazyColumn(
                     modifier = Modifier
-                        .weight(1f) // Ocupa todo el espacio disponible
+                        .weight(1f)
                         .padding(horizontal = 16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                     contentPadding = PaddingValues(bottom = 16.dp)
                 ) {
-                    items(viewModel.cart) { product ->
-                        val qty = quantities.getOrPut(product.id) { 1 }
+                    items(groupedCartItems) { (product, count) ->
                         CartItemCard(
                             product = product,
-                            quantity = qty,
-                            onIncrease = { quantities[product.id] = qty + 1 },
+                            quantity = count,
+                            onIncrease = { viewModel.addToCart(product) },
                             onDecrease = {
-                                if (qty > 1) quantities[product.id] = qty - 1
-                                else scope.launch { snackbarHostState.showSnackbar("Mínimo 1 unidad") }
+                                if (count > 1) viewModel.removeOneFromCart(product)
+                                else scope.launch { snackbarHostState.showSnackbar("Mínimo 1 unidad. Usa la papelera para eliminar.") }
                             },
                             onRemove = {
                                 viewModel.removeFromCart(product)
-                                quantities.remove(product.id)
                             }
                         )
                     }
                 }
 
-                // --- ZONA DE PAGO (Fixed Bottom Sheet style) ---
                 Surface(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp),
                     color = Color.White,
-                    shadowElevation = 16.dp // Sombra fuerte hacia arriba
+                    shadowElevation = 16.dp
                 ) {
                     Column(modifier = Modifier.padding(24.dp)) {
 
-                        // Fila de Total
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,
@@ -121,7 +116,6 @@ fun ClientCartScreen(viewModel: ProductViewModel) {
 
                         Spacer(modifier = Modifier.height(20.dp))
 
-                        // Mensaje de Error (si hay)
                         if (uiState.errorMessage != null) {
                             Text(
                                 text = uiState.errorMessage ?: "",
@@ -131,11 +125,10 @@ fun ClientCartScreen(viewModel: ProductViewModel) {
                             )
                         }
 
-                        // Botón de Pago
                         Button(
                             onClick = {
-                                viewModel.performCheckout(quantities) {
-                                    scope.launch { snackbarHostState.showSnackbar("¡Compra realizada con éxito!") }
+                                viewModel.performCheckout() {
+                                    scope.launch { snackbarHostState.showSnackbar("¡Compra realizada con éxito! ") }
                                 }
                             },
                             modifier = Modifier
@@ -158,14 +151,12 @@ fun ClientCartScreen(viewModel: ProductViewModel) {
                 }
 
             } else {
-                // --- ESTADO VACÍO ---
                 EmptyCartState()
             }
         }
     }
 }
 
-// --- COMPONENTE: TARJETA DE ITEM DE CARRITO ---
 @Composable
 fun CartItemCard(
     product: Product,
@@ -197,12 +188,10 @@ fun CartItemCard(
 
             Spacer(modifier = Modifier.width(16.dp))
 
-            // Info y Controles
             Column(
                 modifier = Modifier.weight(1f).fillMaxHeight(),
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
-                // Top: Nombre y Borrar
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -294,7 +283,7 @@ fun EmptyCartState() {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Icon(
-            imageVector = Icons.Default.ShoppingCart, // Si te da error aquí, usa Icons.Filled.ShoppingCart
+            imageVector = Icons.Default.ShoppingCart,
             contentDescription = null,
             modifier = Modifier.size(100.dp),
             tint = TextGray.copy(alpha = 0.3f)

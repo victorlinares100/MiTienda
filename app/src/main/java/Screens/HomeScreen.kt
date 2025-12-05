@@ -43,16 +43,14 @@ fun HomeScreen(
             onBack = { selectedProduct = null }
         )
     } else {
-        // Ya no necesitamos Surface ni el Header Box aquí, porque vienen de TiendaApp
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(horizontal = 16.dp)
-                // TRUCO VISUAL: Subimos el contenido (-30dp) para que se superponga al header de TiendaApp
+
                 .offset(y = (-30).dp)
         ) {
 
-            // Subtítulo de sección (Opcional, o puedes quitarlo)
             Card(
                 colors = CardDefaults.cardColors(containerColor = Color.White),
                 shape = RoundedCornerShape(50),
@@ -67,7 +65,6 @@ fun HomeScreen(
                 )
             }
 
-            // --- GRILLA ---
             if (products.isNotEmpty()) {
                 val featured = products.take(6)
 
@@ -97,7 +94,6 @@ fun HomeScreen(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // --- BOTÓN GRANDE ---
             Button(
                 onClick = { onGoToCatalog?.invoke() },
                 modifier = Modifier
@@ -118,7 +114,7 @@ fun HomeScreen(
     }
 }
 
-// ... La función FeaturedProductCardModern SE QUEDA IGUAL, no hace falta cambiarla ...
+
 @Composable
 private fun FeaturedProductCardModern(
     product: Product,

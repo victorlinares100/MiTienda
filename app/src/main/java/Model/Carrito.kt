@@ -15,7 +15,6 @@ data class CarritoItemRequest(
     @SerializedName("precioUnitario") val precioUnitario: Double
 )
 
-// Respuesta del backend (Comprobante)
 data class ComprobanteResponse(
     @SerializedName("id") val id: Long,
     @SerializedName("totalCompra") val total: Double,

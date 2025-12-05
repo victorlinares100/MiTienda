@@ -6,7 +6,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -21,11 +20,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import ViewModel.ProductViewModel
 import Model.Product
 import androidx.compose.runtime.collectAsState
-import com.example.mitienda.theme.* // Importamos tus colores: BluePrimary, InputBorder, etc.
+import com.example.mitienda.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -52,15 +50,12 @@ fun ClientCatalogScreen(viewModel: ProductViewModel) {
         color = Color(0xFFF5F7FA)
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
-
-            // --- CABECERA BLANCA ---
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(Color.White)
                     .padding(16.dp)
             ) {
-                // BARRA DE BÚSQUEDA (Con colores personalizados)
                 OutlinedTextField(
                     value = searchQuery,
                     onValueChange = { searchQuery = it },
@@ -73,7 +68,6 @@ fun ClientCatalogScreen(viewModel: ProductViewModel) {
                         .height(52.dp),
                     shape = RoundedCornerShape(26.dp),
                     colors = OutlinedTextFieldDefaults.colors(
-                        // AQUÍ CAMBIAMOS EL MORADO POR AZUL
                         focusedBorderColor = BluePrimary,
                         unfocusedBorderColor = InputBorder,
                         focusedContainerColor = Color(0xFFF5F7FA),
@@ -88,7 +82,6 @@ fun ClientCatalogScreen(viewModel: ProductViewModel) {
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // FILTROS (Pills)
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -112,7 +105,6 @@ fun ClientCatalogScreen(viewModel: ProductViewModel) {
                 }
             }
 
-            // --- CONTADOR ---
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -134,7 +126,6 @@ fun ClientCatalogScreen(viewModel: ProductViewModel) {
                 )
             }
 
-            // --- LISTA ---
             if (uiState.isLoading) {
                 Box(Modifier.fillMaxWidth().padding(20.dp), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator(color = BluePrimary)
@@ -150,7 +141,6 @@ fun ClientCatalogScreen(viewModel: ProductViewModel) {
     }
 }
 
-// --- PÍLDORA CON COLORES AZULES ---
 @Composable
 fun CategoryPill(
     text: String,
@@ -163,11 +153,9 @@ fun CategoryPill(
             .clickable { onClick() }
             .border(
                 width = 1.dp,
-                // Borde Azul si está seleccionado, Gris si no
                 color = if (isSelected) BluePrimary else InputBorder,
                 shape = RoundedCornerShape(50)
             ),
-        // Fondo Azul si está seleccionado
         color = if (isSelected) BluePrimary else Color.White,
         contentColor = if (isSelected) Color.White else TextGray
     ) {

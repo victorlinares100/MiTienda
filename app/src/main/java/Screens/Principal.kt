@@ -2,7 +2,6 @@ package Screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -17,7 +16,6 @@ import androidx.compose.ui.unit.dp
 import ViewModel.ProductViewModel
 import com.example.mitienda.theme.*
 
-// Definición de rutas
 enum class ClientScreenRoute(val title: String, val subtitle: String) {
     HOME("Hola, bienvenido!", "Encuentra tu estilo"),
     CATALOG("Catálogo", "Explora nuestra colección"),
@@ -33,24 +31,22 @@ fun TiendaApp(
     var clientScreen by remember { mutableStateOf(ClientScreenRoute.HOME) }
 
     Scaffold(
-        // --- AQUÍ ESTÁ EL HEADER GLOBAL PARA TODAS LAS PANTALLAS ---
         topBar = {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(140.dp) // Altura del banner
+                    .height(140.dp)
                     .background(
                         Brush.horizontalGradient(
                             colors = listOf(BlueDarkBackground, BlueLightBackground)
                         )
                     )
-                    .shadow(8.dp) // Sombra inferior para que resalte sobre el contenido blanco
+                    .shadow(8.dp)
             ) {
-                // Contenido del Header
                 Column(
                     modifier = Modifier
                         .align(Alignment.CenterStart)
-                        .padding(start = 24.dp, bottom = 24.dp) // Alineado abajo-izquierda
+                        .padding(start = 24.dp, bottom = 24.dp)
                 ) {
                     Text(
                         text = clientScreen.title,
@@ -66,7 +62,6 @@ fun TiendaApp(
                     )
                 }
 
-                // Botón de Cerrar Sesión (Arriba a la derecha)
                 IconButton(
                     onClick = onLogout,
                     modifier = Modifier
@@ -83,7 +78,7 @@ fun TiendaApp(
         },
         bottomBar = {
             NavigationBar(
-                containerColor = Color.White, // Barra blanca para que se vea limpio
+                containerColor = Color.White,
                 tonalElevation = 8.dp
             ) {
                 NavigationBarItem(
@@ -117,7 +112,6 @@ fun TiendaApp(
             }
         }
     ) { padding ->
-        // Contenedor principal con fondo gris claro
         Box(
             modifier = Modifier
                 .padding(padding)

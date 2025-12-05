@@ -19,7 +19,7 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import com.example.mitienda.theme.* // Importamos tus colores
+import com.example.mitienda.theme.*
 
 @Composable
 fun ProductDetailScreen(
@@ -27,7 +27,6 @@ fun ProductDetailScreen(
     viewModel: ProductViewModel,
     onBack: () -> Unit
 ) {
-    // Usamos el color de fondo gris claro (F5F7FA)
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = Color(0xFFF5F7FA)
@@ -39,26 +38,23 @@ fun ProductDetailScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
-            // --- 1. IMAGEN GRANDE ---
             AsyncImage(
                 model = product.image?.url ?: "https://via.placeholder.com/300",
                 contentDescription = product.name,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(350.dp) // Un poco más alta
+                    .height(350.dp)
                     .clip(RoundedCornerShape(bottomStart = 24.dp, bottomEnd = 24.dp)) // Curva solo abajo
-                    .background(Color.White), // Fondo blanco detrás de la imagen
+                    .background(Color.White),
                 contentScale = ContentScale.Crop
             )
 
-            // Espacio con padding horizontal
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 24.dp, vertical = 24.dp)
             ) {
 
-                // --- 2. TÍTULO Y PRECIO ---
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -75,17 +71,15 @@ fun ProductDetailScreen(
                         text = "$${product.price.toInt()}",
                         style = MaterialTheme.typography.headlineMedium,
                         fontWeight = FontWeight.ExtraBold,
-                        color = BluePrimary // Color de marca para el precio
+                        color = BluePrimary
                     )
                 }
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // --- 3. TARJETA DE DETALLES ---
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     elevation = CardDefaults.cardElevation(4.dp),
-                    // Tarjeta blanca para el contenido sobre el fondo gris
                     colors = CardDefaults.cardColors(containerColor = Color.White),
                     shape = RoundedCornerShape(16.dp)
                 ) {
@@ -110,7 +104,6 @@ fun ProductDetailScreen(
 
                 Spacer(modifier = Modifier.height(32.dp))
 
-                // --- 4. BOTONES DE ACCIÓN ---
                 Button(
                     onClick = {
                         viewModel.addToCart(product)
@@ -119,9 +112,8 @@ fun ProductDetailScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(56.dp)
-                        .clip(RoundedCornerShape(16.dp)), // Botón redondeado
+                        .clip(RoundedCornerShape(16.dp)),
                     enabled = product.stock > 0,
-                    // Color de marca
                     colors = ButtonDefaults.buttonColors(
                         containerColor = BluePrimary,
                         disabledContainerColor = Color.LightGray
@@ -152,7 +144,6 @@ fun ProductDetailScreen(
     }
 }
 
-// Helper actualizado con colores y lógica de stock
 @Composable
 fun DetailRow(label: String, value: String, isStock: Boolean = false, stock: Int = 0) {
     Row(
@@ -163,7 +154,6 @@ fun DetailRow(label: String, value: String, isStock: Boolean = false, stock: Int
         Text(
             text = value,
             fontWeight = if (isStock) FontWeight.Bold else FontWeight.Normal,
-            // Si es stock, usa color rojo/verde
             color = if (isStock) {
                 if (stock > 5) SuccessGreen
                 else if (stock > 0) WarningOrange

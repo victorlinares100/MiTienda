@@ -2,7 +2,6 @@ package Model
 
 import com.google.gson.annotations.SerializedName
 
-// --- 1. CLASES AUXILIARES (Lo que viene dentro del producto en el GET) ---
 
 data class Categoria(
     @SerializedName("id") val id: Long,

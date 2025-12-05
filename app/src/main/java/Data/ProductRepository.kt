@@ -10,13 +10,10 @@ import java.io.File
 
 class ProductRepository {
 
-    // Instancia de la API
     private val api = RetrofitClient.apiService
 
-    // Tu API Key de ImgBB (Copiada de tu código anterior)
     private val imgBBKey = "d84d25b4cf23d4403e33c8a450a58508"
 
-    // 1. OBTENER TODOS LOS PRODUCTOS
     suspend fun getAllProducts(): List<Product> {
         return try {
             val response = api.getProducts()
@@ -32,7 +29,6 @@ class ProductRepository {
         }
     }
 
-    // 2. CREAR PRODUCTO
     suspend fun insertProduct(request: ProductRequest): Boolean {
         return try {
             val response = api.createProduct(request)
@@ -43,7 +39,6 @@ class ProductRepository {
         }
     }
 
-    // 3. ACTUALIZAR PRODUCTO
     suspend fun updateProduct(id: Long, request: ProductRequest): Boolean {
         return try {
             val response = api.updateProduct(id, request)
@@ -54,7 +49,6 @@ class ProductRepository {
         }
     }
 
-    // 4. ELIMINAR PRODUCTO
     suspend fun deleteProduct(id: Long): Boolean {
         return try {
             val response = api.deleteProduct(id)
@@ -65,7 +59,6 @@ class ProductRepository {
         }
     }
 
-    // 5. CARGAR LISTAS AUXILIARES (Categorias, Marcas, Tallas)
     suspend fun getCategorias(): List<Categoria> = try {
         api.getCategorias().body() ?: emptyList()
     } catch (e: Exception) { emptyList() }
@@ -78,7 +71,7 @@ class ProductRepository {
         api.getTallas().body() ?: emptyList()
     } catch (e: Exception) { emptyList() }
 
-    // 6. SUBIR IMAGEN A IMGBB
+
     suspend fun uploadImage(file: File): String? {
         return try {
             // Preparamos el archivo para enviarlo por internet

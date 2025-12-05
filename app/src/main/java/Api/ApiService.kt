@@ -7,7 +7,7 @@ import retrofit2.Response
 import retrofit2.http.*
 
 interface ApiService {
-    // --- AUTENTICACIÓN ---
+
     @POST("api/v1/auth/login")
     suspend fun login(@Body request: LoginRequest): Response<User>
 
@@ -27,7 +27,6 @@ interface ApiService {
     @DELETE("api/v1/productos/{id}")
     suspend fun deleteProduct(@Path("id") id: Long): Response<Void>
 
-    // --- DROPDOWNS (Listas para el formulario) ---
     @GET("api/v1/categorias")
     suspend fun getCategorias(): Response<List<Categoria>>
 

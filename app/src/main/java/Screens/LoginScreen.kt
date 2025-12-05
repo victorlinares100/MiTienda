@@ -37,7 +37,6 @@ fun LoginScreen(
     val isLoading by viewModel.isLoading.collectAsState()
     val errorMessage by viewModel.errorMessage.collectAsState()
 
-    // Fondo degradado
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -49,10 +48,9 @@ fun LoginScreen(
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
 
-            // --- HEADER (Texto de Bienvenida) ---
             Column(
                 modifier = Modifier
-                    .weight(0.35f) // Ocupa el 35% de arriba
+                    .weight(0.35f)
                     .fillMaxWidth()
                     .padding(24.dp),
                 verticalArrangement = Arrangement.Center,
@@ -72,9 +70,8 @@ fun LoginScreen(
                 )
             }
 
-            // --- FORMULARIO (Tarjeta Blanca) ---
             Surface(
-                modifier = Modifier.weight(0.65f), // Ocupa el 65% de abajo
+                modifier = Modifier.weight(0.65f),
                 shape = RoundedCornerShape(topStart = 40.dp, topEnd = 40.dp),
                 color = Color.White
             ) {
@@ -135,7 +132,6 @@ fun LoginScreen(
     }
 }
 
-// --- Componentes Reutilizables (Cópialos al final del archivo o en uno aparte) ---
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

@@ -1,10 +1,9 @@
 package ViewModel
 
 import Data.ProductRepository
-import Data.CarritoRepository // <--- Nuevo Import
-import Data.UserRepository    // <--- Nuevo Import (Para sacar el ID del usuario)
+import Data.CarritoRepository
+import Data.UserRepository
 import Model.*
-import android.util.Log
 import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -12,7 +11,6 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.io.File
 
-// Estado de la pantalla
 data class ProductUiState(
     val productList: List<Product> = emptyList(),
     val categorias: List<Categoria> = emptyList(),
@@ -22,7 +20,6 @@ data class ProductUiState(
     val errorMessage: String? = null
 )
 
-// CAMBIO AQUÍ: Ahora recibimos dos repositorios en el constructor
 class ProductViewModel(
     private val repository: ProductRepository,
     private val carritoRepository: CarritoRepository
@@ -65,7 +62,6 @@ class ProductViewModel(
         }
     }
 
-    // --- CRUD DE PRODUCTOS ---
 
     fun addProduct(
         name: String, price: Double, stock: Int,
@@ -136,52 +132,63 @@ class ProductViewModel(
         }
     }
 
-    // --- CARRITO LOCAL ---
     fun addToCart(product: Product) { _cart.add(product) }
-    fun removeFromCart(product: Product) { _cart.remove(product) }
+
+    fun removeFromCart(product: Product) {
+        _cart.removeIf { it.id == product.id }
+    }
+
+    fun removeOneFromCart(product: Product) {
+        val indexToRemove = _cart.indexOfFirst { it.id == product.id }
+        if (indexToRemove != -1) {
+            _cart.removeAt(indexToRemove)
+        }
+    }
+
     fun clearCart() { _cart.clear() }
 
-    // --- PROCESAR COMPRA (CHECKOUT) ---
-    // Esta es la nueva función que conecta con el CarritoRepository
-    fun performCheckout(quantities: Map<Long, Int>, onSuccess: () -> Unit) {
+    fun performCheckout(onSuccess: () -> Unit) {
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true) }
+            _uiState.update { it.copy(isLoading = true, errorMessage = null) }
 
-            // 1. Obtenemos el usuario actual
             val userId = UserRepository.currentUser?.id
-
-            Log.d("ViewModel", "Intentando pagar con Usuario ID: $userId")
 
             if (userId == null) {
                 _uiState.update { it.copy(isLoading = false, errorMessage = "Error: Sesión no válida. Vuelve a iniciar sesión.") }
                 return@launch
             }
 
-            // 2. Mapeamos los productos del carrito al formato que pide el Backend
-            val itemsRequest = _cart.map { product ->
+            val groupedItems = _cart.groupBy { it.id }.mapValues { it.value.size }
+
+            val itemsRequest = _cart.distinctBy { it.id }.map { uniqueProduct ->
                 CarritoItemRequest(
-                    productoId = product.id,
-                    cantidad = quantities[product.id] ?: 1,
-                    precioUnitario = product.price
+                    productoId = uniqueProduct.id,
+                    cantidad = groupedItems[uniqueProduct.id] ?: 1,
+                    precioUnitario = uniqueProduct.price
                 )
             }
 
-            // 3. Creamos la solicitud completa
+            if (itemsRequest.isEmpty()) {
+                _uiState.update { it.copy(isLoading = false, errorMessage = "El carrito está vacío.") }
+                return@launch
+            }
+
+
             val request = CarritoRequest(
                 usuarioId = userId,
-                metodoPagoId = 1, // Por defecto 1, como en tu React
-                estadoId = 1,     // Por defecto 1 (Pendiente)
+                metodoPagoId = 1,
+                estadoId = 1,
                 items = itemsRequest
             )
 
-            // 4. Llamamos al nuevo repositorio de carrito
+            // 5. Llamamos al nuevo repositorio de carrito
             val success = carritoRepository.procesarCompra(request)
 
             _uiState.update { it.copy(isLoading = false) }
 
             if (success) {
-                clearCart() // Vaciamos el carrito local
-                onSuccess() // Notificamos éxito
+                clearCart()
+                onSuccess()
             } else {
                 _uiState.update { it.copy(errorMessage = "Hubo un error al procesar tu compra.") }
             }

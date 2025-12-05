@@ -39,36 +39,29 @@ fun AdminScreen(
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
 
-    // --- ESTADOS DEL FORMULARIO ---
     var name by remember { mutableStateOf("") }
     var priceText by remember { mutableStateOf("") }
     var stockText by remember { mutableStateOf("") }
 
-    // IDs seleccionados
     var selectedCatId by remember { mutableStateOf<Long?>(null) }
     var selectedBrandId by remember { mutableStateOf<Long?>(null) }
     var selectedSizeId by remember { mutableStateOf<Long?>(null) }
 
-    // Imagen
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
     var currentImageUrl by remember { mutableStateOf<String?>(null) } // Para cuando editamos
 
-    // Control de Edición
     var editingProductId by remember { mutableStateOf<Long?>(null) }
 
-    // Launcher para abrir la galería
     val imagePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
         selectedImageUri = uri
     }
 
-    // Dropdown States (Expandidos o no)
     var catExpanded by remember { mutableStateOf(false) }
     var brandExpanded by remember { mutableStateOf(false) }
     var sizeExpanded by remember { mutableStateOf(false) }
 
-    // Helper para limpiar formulario
     fun clearForm() {
         name = ""; priceText = ""; stockText = ""
         selectedCatId = null; selectedBrandId = null; selectedSizeId = null
@@ -76,7 +69,6 @@ fun AdminScreen(
         editingProductId = null
     }
 
-    // Helper para cargar datos al editar
     fun loadProductForEdit(product: Product) {
         editingProductId = product.id
         name = product.name
@@ -93,9 +85,8 @@ fun AdminScreen(
         topBar = {
             CenterAlignedTopAppBar(
                 title = { Text("Administración de Productos") },
-                // --- COLOR DE CABECERA PERSONALIZADO ---
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = BlueDarkBackground, // Usamos el azul oscuro
+                    containerColor = BlueDarkBackground,
                     titleContentColor = Color.White,
                     actionIconContentColor = Color.White
                 ),
@@ -111,39 +102,33 @@ fun AdminScreen(
             modifier = Modifier
                 .padding(padding)
                 .fillMaxSize()
-                // --- FONDO GRIS CLARO PARA EL CONTENIDO ---
                 .background(Color(0xFFF5F7FA))
                 .padding(16.dp)
         ) {
-            // --- FORMULARIO ---
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 elevation = CardDefaults.cardElevation(4.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White) // Formulario Blanco
+                colors = CardDefaults.cardColors(containerColor = Color.White)
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(if (editingProductId == null) "Nuevo Producto" else "Editar Producto", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    // Nombre y Stock
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         OutlinedTextField(
                             value = name, onValueChange = { name = it },
                             label = { Text("Nombre") },
                             modifier = Modifier.weight(1f),
-                            // --- COLOR DEL TEXT FIELD ---
                             colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = BluePrimary, cursorColor = BluePrimary)
                         )
                         OutlinedTextField(
                             value = stockText, onValueChange = { stockText = it },
                             label = { Text("Stock") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                             modifier = Modifier.width(100.dp),
-                            // --- COLOR DEL TEXT FIELD ---
                             colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = BluePrimary, cursorColor = BluePrimary)
                         )
                     }
 
-                    // Precio
                     OutlinedTextField(
                         value = priceText, onValueChange = { priceText = it },
                         label = { Text("Precio") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
@@ -153,8 +138,6 @@ fun AdminScreen(
                     )
 
                     Spacer(modifier = Modifier.height(8.dp))
-
-                    // --- SELECTORES (Categoría, Marca, Talla) ---
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                         // Categoría
                         Box(modifier = Modifier.weight(1f).padding(end = 4.dp)) {
@@ -162,7 +145,6 @@ fun AdminScreen(
                             OutlinedButton(
                                 onClick = { catExpanded = true },
                                 modifier = Modifier.fillMaxWidth(),
-                                // --- COLOR DEL BOTÓN OUTLINED ---
                                 colors = ButtonDefaults.outlinedButtonColors(contentColor = TextGray),
                                 border = ButtonDefaults.outlinedButtonBorder.copy(
                                     brush = if (catExpanded || selectedCatId != null) SolidColor(BluePrimary) else SolidColor(InputBorder)
@@ -177,7 +159,6 @@ fun AdminScreen(
                             }
                         }
 
-                        // Marca
                         Box(modifier = Modifier.weight(1f).padding(horizontal = 4.dp)) {
                             val brandName = uiState.marcas.find { it.id == selectedBrandId }?.nombre ?: "Marca"
                             OutlinedButton(
@@ -197,7 +178,6 @@ fun AdminScreen(
                             }
                         }
 
-                        // Talla
                         Box(modifier = Modifier.weight(1f).padding(start = 4.dp)) {
                             val sizeName = uiState.tallas.find { it.id == selectedSizeId }?.nombre ?: "Talla"
                             OutlinedButton(
@@ -224,7 +204,6 @@ fun AdminScreen(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Button(
                             onClick = { imagePickerLauncher.launch("image/*") },
-                            // --- COLOR DEL BOTÓN PRINCIPAL ---
                             colors = ButtonDefaults.buttonColors(containerColor = BluePrimary)
                         ) {
                             Icon(Icons.Default.Image, contentDescription = null)
@@ -234,7 +213,6 @@ fun AdminScreen(
 
                         Spacer(Modifier.width(16.dp))
 
-                        // Previsualización pequeña (el color aquí es solo decorativo)
                         if (selectedImageUri != null) {
                             AsyncImage(
                                 model = selectedImageUri,
@@ -283,7 +261,6 @@ fun AdminScreen(
                         },
                         modifier = Modifier.fillMaxWidth(),
                         enabled = !uiState.isLoading,
-                        // --- COLOR DEL BOTÓN GUARDAR ---
                         colors = ButtonDefaults.buttonColors(containerColor = BluePrimary)
                     ) {
                         if (uiState.isLoading) CircularProgressIndicator(modifier = Modifier.size(20.dp), color = Color.White)
@@ -301,7 +278,6 @@ fun AdminScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // --- LISTA DE PRODUCTOS ---
             if (uiState.isLoading && uiState.productList.isEmpty()) {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator(color = BluePrimary) }
             } else {
@@ -313,7 +289,6 @@ fun AdminScreen(
                         Card(
                             modifier = Modifier.fillMaxWidth(),
                             elevation = CardDefaults.cardElevation(2.dp),
-                            // --- COLOR DE TARJETA LIGERAMENTE GRIS PARA CONTRASTE ---
                             colors = CardDefaults.cardColors(containerColor = Color.White)
                         ) {
                             Row(
@@ -332,18 +307,14 @@ fun AdminScreen(
 
                                 Column(modifier = Modifier.weight(1f)) {
                                     Text(product.name, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyLarge, color = BlueDarkBackground)
-                                    // Precio en color de marca
                                     Text("$${product.price} - Stock: ${product.stock}", style = MaterialTheme.typography.bodyMedium, color = BluePrimary)
                                     Text("${product.category?.nombre} | ${product.brand?.nombre} | ${product.size?.nombre}", style = MaterialTheme.typography.bodySmall, color = TextGray)
                                 }
 
-                                // Botones de acción
                                 IconButton(onClick = { loadProductForEdit(product) }) {
-                                    // --- ICONO EDITAR EN AZUL ---
                                     Icon(Icons.Default.Edit, contentDescription = "Editar", tint = BluePrimary)
                                 }
                                 IconButton(onClick = { viewModel.deleteProduct(product) }) {
-                                    // --- ICONO BORRAR EN ROJO DE ERROR ---
                                     Icon(Icons.Default.Delete, contentDescription = "Borrar", tint = ErrorRed)
                                 }
                             }
