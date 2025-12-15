@@ -15,7 +15,6 @@ import androidx.compose.ui.unit.dp
 fun NosotrosScreen() {
     Surface(
         modifier = Modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.background
     ) {
         Column(
             modifier = Modifier
