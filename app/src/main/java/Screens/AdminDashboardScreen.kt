@@ -24,7 +24,9 @@ import com.example.mitienda.theme.ErrorRed // O el color rojo que tengas definid
 enum class AdminScreenRoute(val title: String, val icon: ImageVector) {
     DASHBOARD("Dashboard", Icons.Default.Dashboard),
     PRODUCTS("Productos", Icons.Default.Inventory),
-    CATEGORIES("Categorías", Icons.Default.Category)
+    CATEGORIES("Categorías", Icons.Default.Category),
+
+    USERS("Usuarios", Icons.Default.Group)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -169,6 +171,9 @@ fun AdminDashboardScreen(
                 }
                 AdminScreenRoute.CATEGORIES -> {
                     AdminCategoryScreen(viewModel)
+                }
+                AdminScreenRoute.USERS -> {
+                    AdminUserScreen(viewModel)
                 }
                 }
             }

@@ -43,8 +43,8 @@ class RegisterViewModel : ViewModel() {
 
             val nuevoUsuario = User(
                 nombre = nombre.trim(),
-                correo = correo.trim(),
                 email = correo.trim(),
+                correoAlternativo = correo.trim(),
                 contrasena = pass,
                 region = region,
                 comuna = comuna,

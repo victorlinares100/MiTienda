@@ -46,6 +46,23 @@ object UserRepository {
         }
     }
 
+    // ... dentro de object UserRepository ...
+
+    // --- OBTENER TODOS LOS USUARIOS (ADMIN) ---
+    suspend fun getAllUsers(): Result<List<User>> {
+        return try {
+            val response = RetrofitClient.apiService.getAllUsers()
+            if (response.isSuccessful && response.body() != null) {
+                Result.success(response.body()!!)
+            } else {
+                Result.failure(Exception("Error al cargar usuarios: ${response.code()}"))
+            }
+        } catch (e: Exception) {
+            Log.e("UserRepository", "Error getUsers", e)
+            Result.failure(e)
+        }
+    }
+
     // --- LOGOUT ---
     fun logout() {
         currentUser = null
