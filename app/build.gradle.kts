@@ -82,5 +82,10 @@ dependencies {
 
     implementation("io.coil-kt:coil-compose:2.4.0")
 
+    // Para Test Unitarios
+    testImplementation("junit:junit:4.13.2")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3") // Para probar corrutinas
+    testImplementation("io.mockk:mockk:1.13.8") // Para simular el Repository
+
 
 }
