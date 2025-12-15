@@ -132,6 +132,39 @@ class ProductViewModel(
         }
     }
 
+    // ----------------------------------------------------------------
+    //  NUEVA SECCIÓN: GESTIÓN DE CATEGORÍAS
+    // ----------------------------------------------------------------
+
+    fun addCategory(nombre: String) {
+        // Simulamos la creación generando un ID temporal basado en la hora actual
+        val nuevaCat = Categoria(
+            id = System.currentTimeMillis(),
+            nombre = nombre
+        )
+        // Actualizamos la UI inmediatamente
+        _uiState.update { currentState ->
+            currentState.copy(
+                categorias = currentState.categorias + nuevaCat
+            )
+        }
+        // NOTA: Aquí deberías llamar a repository.createCategory(nombre) si quisieras guardarlo en BD real
+    }
+
+    fun deleteCategory(categoryId: Long) {
+        // Filtramos la lista quitando la categoría seleccionada
+        _uiState.update { currentState ->
+            currentState.copy(
+                categorias = currentState.categorias.filter { it.id != categoryId }
+            )
+        }
+        // NOTA: Aquí deberías llamar a repository.deleteCategory(id) si quisieras borrarlo en BD real
+    }
+
+    // ----------------------------------------------------------------
+    //  FIN SECCIÓN CATEGORÍAS
+    // ----------------------------------------------------------------
+
     fun addToCart(product: Product) { _cart.add(product) }
 
     fun removeFromCart(product: Product) {
@@ -181,7 +214,6 @@ class ProductViewModel(
                 items = itemsRequest
             )
 
-            // 5. Llamamos al nuevo repositorio de carrito
             val success = carritoRepository.procesarCompra(request)
 
             _uiState.update { it.copy(isLoading = false) }

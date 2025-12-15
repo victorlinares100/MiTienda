@@ -168,14 +168,12 @@ fun AdminDashboardScreen(
                     AdminProductScreen(viewModel)
                 }
                 AdminScreenRoute.CATEGORIES -> {
-                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text("Próximamente: Categorías", color = Color.Gray)
-                    }
+                    AdminCategoryScreen(viewModel)
+                }
                 }
             }
         }
     }
-}
 
 // --- COMPONENTE AUXILIAR PARA LAS TARJETAS ---
 @Composable
