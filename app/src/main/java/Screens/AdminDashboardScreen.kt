@@ -10,23 +10,25 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.mitienda.theme.BlueDarkBackground
 import com.example.mitienda.theme.BluePrimary
-import com.example.mitienda.theme.ErrorRed // O el color rojo que tengas definido, si no usa Color.Red
+import java.text.NumberFormat
+import java.util.Locale
 
+// Definimos las rutas del menú
 enum class AdminScreenRoute(val title: String, val icon: ImageVector) {
     DASHBOARD("Dashboard", Icons.Default.Dashboard),
     PRODUCTS("Productos", Icons.Default.Inventory),
     CATEGORIES("Categorías", Icons.Default.Category),
-
-    USERS("Usuarios", Icons.Default.Group)
+    USERS("Usuarios", Icons.Default.Group),
+    STOCK("Alertas", Icons.Default.Warning)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -35,16 +37,19 @@ fun AdminDashboardScreen(
     viewModel: ProductViewModel,
     onLogout: () -> Unit
 ) {
-    // 1. OBTENEMOS LOS DATOS PARA CALCULAR ESTADÍSTICAS
+    // 1. OBTENEMOS LOS DATOS
     val uiState by viewModel.uiState.collectAsState()
 
-    // Cálculos simples
+    // --- CÁLCULOS MATEMÁTICOS ---
     val totalProductos = uiState.productList.size
     val stockTotal = uiState.productList.sumOf { it.stock }
     val valorInventario = uiState.productList.sumOf { it.price * it.stock }
-    val productosBajoStock = uiState.productList.count { it.stock < 5 } // Alerta si hay menos de 5
+    val productosBajoStock = uiState.productList.count { it.stock <= 5 }
 
-    var currentRoute by remember { mutableStateOf(AdminScreenRoute.DASHBOARD) } // Empezamos en Dashboard para ver los cambios
+    // Formateador de dinero (Ej: $ 1.000.000)
+    val currencyFormat = NumberFormat.getCurrencyInstance(Locale("es", "CL"))
+
+    var currentRoute by remember { mutableStateOf(AdminScreenRoute.DASHBOARD) }
     val routes = AdminScreenRoute.values().toList()
 
     Scaffold(
@@ -63,6 +68,7 @@ fun AdminDashboardScreen(
                     }
                 )
 
+                // Barra de Pestañas
                 ScrollableTabRow(
                     selectedTabIndex = routes.indexOf(currentRoute),
                     containerColor = Color.White,
@@ -109,78 +115,80 @@ fun AdminDashboardScreen(
         ) {
             when (currentRoute) {
                 AdminScreenRoute.DASHBOARD -> {
-                    // --- AQUÍ ESTÁ EL DASHBOARD VISUAL ---
+                    // --- DASHBOARD PRINCIPAL ---
                     LazyColumn(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(16.dp),
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(16.dp),
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         item {
                             Text(
-                                "Resumen de la Tienda",
-                                style = MaterialTheme.typography.titleLarge,
+                                "Resumen General",
+                                style = MaterialTheme.typography.headlineSmall,
                                 fontWeight = FontWeight.Bold,
                                 color = BlueDarkBackground
                             )
                         }
 
+                        // --- AQUÍ ESTÁ EL CAMBIO: CUADRÍCULA 2x2 ---
+
+                        // FILA 1: Productos y Unidades
                         item {
-                            // Fila 1 de tarjetas
-                            Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(16.dp)
+                            ) {
                                 StatCard(
                                     title = "Productos",
                                     value = totalProductos.toString(),
                                     icon = Icons.Default.Inventory,
                                     color = BluePrimary,
-                                    modifier = Modifier.weight(1f)
+                                    modifier = Modifier.weight(1f) // Ocupa la mitad exacta
                                 )
                                 StatCard(
-                                    title = "Stock Total",
+                                    title = "Unidades Totales",
                                     value = stockTotal.toString(),
-                                    icon = Icons.Default.ShowChart, // Icono de gráfico
-                                    color = Color(0xFF2E7D32), // Verde
-                                    modifier = Modifier.weight(1f)
+                                    icon = Icons.Default.ShowChart,
+                                    color = Color(0xFF2E7D32),
+                                    modifier = Modifier.weight(1f) // Ocupa la mitad exacta
                                 )
                             }
                         }
 
+                        // FILA 2: Valor Inventario y Alertas
                         item {
-                            // Fila 2 de tarjetas
-                            Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(16.dp)
+                            ) {
                                 StatCard(
                                     title = "Valor Inventario",
-                                    value = "$${valorInventario}",
+                                    value = currencyFormat.format(valorInventario),
                                     icon = Icons.Default.AttachMoney,
-                                    color = Color(0xFFF57C00), // Naranja
+                                    color = Color(0xFFF57C00),
                                     modifier = Modifier.weight(1f)
                                 )
                                 StatCard(
-                                    title = "Stock Bajo (<5)",
+                                    title = "Alertas Stock",
                                     value = productosBajoStock.toString(),
                                     icon = Icons.Default.Warning,
-                                    color = if(productosBajoStock > 0) Color.Red else Color.Gray, // Rojo si hay alerta
+                                    color = if (productosBajoStock > 0) Color.Red else Color.Gray,
                                     modifier = Modifier.weight(1f)
                                 )
                             }
                         }
                     }
                 }
-                AdminScreenRoute.PRODUCTS -> {
-                    AdminProductScreen(viewModel)
-                }
-                AdminScreenRoute.CATEGORIES -> {
-                    AdminCategoryScreen(viewModel)
-                }
-                AdminScreenRoute.USERS -> {
-                    AdminUserScreen(viewModel)
-                }
-                }
+                AdminScreenRoute.PRODUCTS -> AdminProductScreen(viewModel)
+                AdminScreenRoute.CATEGORIES -> AdminCategoryScreen(viewModel)
+                AdminScreenRoute.USERS -> AdminUserScreen(viewModel)
+                AdminScreenRoute.STOCK -> AdminStockScreen(viewModel)
             }
         }
     }
+}
 
-// --- COMPONENTE AUXILIAR PARA LAS TARJETAS ---
+// Tarjeta Estilo Flexible (Se adapta al ancho disponible)
 @Composable
 fun StatCard(
     title: String,
@@ -190,14 +198,14 @@ fun StatCard(
     modifier: Modifier = Modifier
 ) {
     Card(
-        modifier = modifier,
+        modifier = modifier.height(130.dp), // Altura fija, ancho flexible
         elevation = CardDefaults.cardElevation(4.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         shape = RoundedCornerShape(12.dp)
     ) {
         Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.Center
+            modifier = Modifier.padding(16.dp).fillMaxSize(),
+            verticalArrangement = Arrangement.SpaceBetween
         ) {
             Icon(
                 imageVector = icon,
@@ -205,18 +213,23 @@ fun StatCard(
                 tint = color,
                 modifier = Modifier.size(32.dp)
             )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = value,
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold,
-                color = BlueDarkBackground
-            )
-            Text(
-                text = title,
-                style = MaterialTheme.typography.bodyMedium,
-                color = Color.Gray
-            )
+            Column {
+                // Ajustamos el texto para que si es muy largo baje de línea, pero se vea completo
+                Text(
+                    text = value,
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = BlueDarkBackground,
+                    lineHeight = 24.sp,
+                    maxLines = 2, // Permite 2 líneas si el precio es gigante
+                    overflow = TextOverflow.Ellipsis
+                )
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color.Gray
+                )
+            }
         }
     }
 }

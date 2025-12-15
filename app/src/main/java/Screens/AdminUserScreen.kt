@@ -23,7 +23,6 @@ import com.example.mitienda.theme.BluePrimary
 @Composable
 fun AdminUserScreen(viewModel: ProductViewModel) {
 
-    // Obtenemos la lista filtrada directamente del ViewModel
     val users = viewModel.getFilteredUsers()
 
     Box(modifier = Modifier.fillMaxSize().padding(16.dp)) {
@@ -93,7 +92,6 @@ fun UserCard(user: Model.User, onClick: () -> Unit) {
             Spacer(modifier = Modifier.width(12.dp))
 
             Column(modifier = Modifier.weight(1f)) {
-                // USAMOS LOS MÉTODOS SEGUROS AQUÍ
                 Text(
                     text = user.getNombreSeguro(),
                     fontWeight = FontWeight.Bold,
@@ -106,21 +104,18 @@ fun UserCard(user: Model.User, onClick: () -> Unit) {
                 )
             }
 
-            // Manejo seguro del ID para el color del estado
-            val safeId = user.id ?: 0L
-            val isActive = safeId % 2 != 0L
-
+            // --- SIEMPRE ACTIVO ---
             Badge(
-                containerColor = if (isActive) Color(0xFFE8F5E9) else Color(0xFFFFEBEE),
-                contentColor = if (isActive) Color(0xFF2E7D32) else Color(0xFFC62828)
+                containerColor = Color(0xFFE8F5E9), // Verde claro fondo
+                contentColor = Color(0xFF2E7D32)    // Verde oscuro texto
             ) {
-                Text(if (isActive) "Activo" else "Bloqueado", modifier = Modifier.padding(4.dp))
+                Text("Activo", modifier = Modifier.padding(4.dp))
             }
         }
     }
 }
 
-// VENTANA EMERGENTE CON EL DETALLE
+// VENTANA EMERGENTE CON EL DETALLE (SOLO DATOS, SIN BOTONES)
 @Composable
 fun UserDetailDialog(user: Model.User, onDismiss: () -> Unit) {
     AlertDialog(
@@ -128,40 +123,15 @@ fun UserDetailDialog(user: Model.User, onDismiss: () -> Unit) {
         icon = {
             Icon(Icons.Default.AccountCircle, contentDescription = null, modifier = Modifier.size(48.dp), tint = BluePrimary)
         },
-        // Usamos el nombre seguro en el título
         title = { Text(text = user.getNombreSeguro()) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 HorizontalDivider()
 
-                // Usamos el email seguro
                 DetailRow(Icons.Default.Email, "Email", user.getEmailSeguro())
-
-                // Datos simulados (puedes cambiarlos luego si vienen de la BD)
-                DetailRow(Icons.Default.Phone, "Teléfono", "+56 9 .... ....")
                 DetailRow(Icons.Default.LocationOn, "Región", user.region ?: "Sin región")
-                DetailRow(Icons.Default.History, "Rol", user.rolString ?: "Cliente")
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Text("Acciones de cuenta:", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.labelLarge)
-
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Button(
-                        onClick = {},
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFC62828)),
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text("Bloquear")
-                    }
-                    Button(
-                        onClick = {},
-                        colors = ButtonDefaults.buttonColors(containerColor = BluePrimary),
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text("Reset Pass")
-                    }
-                }
+                DetailRow(Icons.Default.Place, "Comuna", user.comuna ?: "Sin comuna")
+                DetailRow(Icons.Default.Security, "Rol", user.rolString ?: "Cliente")
             }
         },
         confirmButton = {
