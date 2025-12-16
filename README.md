@@ -29,4 +29,7 @@ Despliegue y Persistencia:
 
 Visualización de Datos: La funcionalidad del backend es totalmente verificable. Los endpoints y los datos de las entidades pueden ser visualizados y probados en tiempo real a través del Swagger UI provisto en la URL de Render.
 
+Pruebas unitarias : Se realizaron las pruebas unitarias correspondientes a Todo el viewModel para comprobar la logica del negocio sin incluir obviamente al ViewModelFactory 
+
+Admin : el admin cuenta con 5 pestañas  de productos,dashboard,gestion de categorias y usuarios y por ultimo una pestaña de alertas en la cual puedes ver los productos que tengan bajo stock 
 
