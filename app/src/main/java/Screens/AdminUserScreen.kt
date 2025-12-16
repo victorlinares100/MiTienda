@@ -27,7 +27,6 @@ fun AdminUserScreen(viewModel: ProductViewModel) {
 
     Box(modifier = Modifier.fillMaxSize().padding(16.dp)) {
         Column {
-            // --- BUSCADOR ---
             OutlinedTextField(
                 value = viewModel.userSearchQuery,
                 onValueChange = { viewModel.userSearchQuery = it },
@@ -43,7 +42,6 @@ fun AdminUserScreen(viewModel: ProductViewModel) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // --- LISTA DE USUARIOS ---
             LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
@@ -66,7 +64,6 @@ fun AdminUserScreen(viewModel: ProductViewModel) {
     }
 }
 
-// TARJETA DE LA LISTA
 @Composable
 fun UserCard(user: Model.User, onClick: () -> Unit) {
     Card(
@@ -78,7 +75,6 @@ fun UserCard(user: Model.User, onClick: () -> Unit) {
             modifier = Modifier.padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Icono de perfil genérico
             Box(
                 modifier = Modifier
                     .size(40.dp)
@@ -104,10 +100,9 @@ fun UserCard(user: Model.User, onClick: () -> Unit) {
                 )
             }
 
-            // --- SIEMPRE ACTIVO ---
             Badge(
-                containerColor = Color(0xFFE8F5E9), // Verde claro fondo
-                contentColor = Color(0xFF2E7D32)    // Verde oscuro texto
+                containerColor = Color(0xFFE8F5E9),
+                contentColor = Color(0xFF2E7D32)
             ) {
                 Text("Activo", modifier = Modifier.padding(4.dp))
             }
@@ -115,7 +110,6 @@ fun UserCard(user: Model.User, onClick: () -> Unit) {
     }
 }
 
-// VENTANA EMERGENTE CON EL DETALLE (SOLO DATOS, SIN BOTONES)
 @Composable
 fun UserDetailDialog(user: Model.User, onDismiss: () -> Unit) {
     AlertDialog(

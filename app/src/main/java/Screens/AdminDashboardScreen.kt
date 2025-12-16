@@ -22,7 +22,6 @@ import com.example.mitienda.theme.BluePrimary
 import java.text.NumberFormat
 import java.util.Locale
 
-// Definimos las rutas del menú
 enum class AdminScreenRoute(val title: String, val icon: ImageVector) {
     DASHBOARD("Dashboard", Icons.Default.Dashboard),
     PRODUCTS("Productos", Icons.Default.Inventory),
@@ -37,16 +36,14 @@ fun AdminDashboardScreen(
     viewModel: ProductViewModel,
     onLogout: () -> Unit
 ) {
-    // 1. OBTENEMOS LOS DATOS
+
     val uiState by viewModel.uiState.collectAsState()
 
-    // --- CÁLCULOS MATEMÁTICOS ---
     val totalProductos = uiState.productList.size
     val stockTotal = uiState.productList.sumOf { it.stock }
     val valorInventario = uiState.productList.sumOf { it.price * it.stock }
     val productosBajoStock = uiState.productList.count { it.stock <= 5 }
 
-    // Formateador de dinero (Ej: $ 1.000.000)
     val currencyFormat = NumberFormat.getCurrencyInstance(Locale("es", "CL"))
 
     var currentRoute by remember { mutableStateOf(AdminScreenRoute.DASHBOARD) }
@@ -68,7 +65,6 @@ fun AdminDashboardScreen(
                     }
                 )
 
-                // Barra de Pestañas
                 ScrollableTabRow(
                     selectedTabIndex = routes.indexOf(currentRoute),
                     containerColor = Color.White,
@@ -115,7 +111,6 @@ fun AdminDashboardScreen(
         ) {
             when (currentRoute) {
                 AdminScreenRoute.DASHBOARD -> {
-                    // --- DASHBOARD PRINCIPAL ---
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
                         contentPadding = PaddingValues(16.dp),
@@ -130,9 +125,6 @@ fun AdminDashboardScreen(
                             )
                         }
 
-                        // --- AQUÍ ESTÁ EL CAMBIO: CUADRÍCULA 2x2 ---
-
-                        // FILA 1: Productos y Unidades
                         item {
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
@@ -143,19 +135,18 @@ fun AdminDashboardScreen(
                                     value = totalProductos.toString(),
                                     icon = Icons.Default.Inventory,
                                     color = BluePrimary,
-                                    modifier = Modifier.weight(1f) // Ocupa la mitad exacta
+                                    modifier = Modifier.weight(1f)
                                 )
                                 StatCard(
                                     title = "Unidades Totales",
                                     value = stockTotal.toString(),
                                     icon = Icons.Default.ShowChart,
                                     color = Color(0xFF2E7D32),
-                                    modifier = Modifier.weight(1f) // Ocupa la mitad exacta
+                                    modifier = Modifier.weight(1f)
                                 )
                             }
                         }
 
-                        // FILA 2: Valor Inventario y Alertas
                         item {
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
@@ -188,7 +179,6 @@ fun AdminDashboardScreen(
     }
 }
 
-// Tarjeta Estilo Flexible (Se adapta al ancho disponible)
 @Composable
 fun StatCard(
     title: String,
@@ -198,7 +188,7 @@ fun StatCard(
     modifier: Modifier = Modifier
 ) {
     Card(
-        modifier = modifier.height(130.dp), // Altura fija, ancho flexible
+        modifier = modifier.height(130.dp),
         elevation = CardDefaults.cardElevation(4.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         shape = RoundedCornerShape(12.dp)
@@ -214,14 +204,13 @@ fun StatCard(
                 modifier = Modifier.size(32.dp)
             )
             Column {
-                // Ajustamos el texto para que si es muy largo baje de línea, pero se vea completo
                 Text(
                     text = value,
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
                     color = BlueDarkBackground,
                     lineHeight = 24.sp,
-                    maxLines = 2, // Permite 2 líneas si el precio es gigante
+                    maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
                 Text(

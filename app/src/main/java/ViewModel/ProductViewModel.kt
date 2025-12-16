@@ -14,13 +14,12 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.io.File
 
-// 1. Agregamos la lista de usuarios al estado global
 data class ProductUiState(
     val productList: List<Product> = emptyList(),
     val categorias: List<Categoria> = emptyList(),
     val marcas: List<Marca> = emptyList(),
     val tallas: List<Talla> = emptyList(),
-    val usuarios: List<User> = emptyList(), // <--- NUEVO CAMPO
+    val usuarios: List<User> = emptyList(),
     val isLoading: Boolean = false,
     val errorMessage: String? = null
 )
@@ -29,14 +28,10 @@ class ProductViewModel(
     private val repository: ProductRepository,
     private val carritoRepository: CarritoRepository
 ) : ViewModel() {
-
     private val _uiState = MutableStateFlow(ProductUiState())
     val uiState: StateFlow<ProductUiState> = _uiState.asStateFlow()
-
     private val _cart = mutableStateListOf<Product>()
     val cart: List<Product> get() = _cart
-
-    // Variables para la pantalla de Admin Usuarios
     var userSearchQuery by mutableStateOf("")
     var selectedUserForDetail by mutableStateOf<User?>(null)
 
@@ -49,13 +44,10 @@ class ProductViewModel(
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
 
             try {
-                // Cargamos todo en paralelo: Productos, Categorías... Y AHORA USUARIOS
                 val products = repository.getAllProducts()
                 val cats = repository.getCategorias()
                 val brands = repository.getMarcas()
                 val sizes = repository.getTallas()
-
-                // Llamamos al repositorio de usuarios (es un object, no necesitamos inyectarlo)
                 val usersResult = UserRepository.getAllUsers()
                 val usersList = usersResult.getOrNull() ?: emptyList()
 
@@ -65,7 +57,7 @@ class ProductViewModel(
                         categorias = cats,
                         marcas = brands,
                         tallas = sizes,
-                        usuarios = usersList, // <--- Guardamos los usuarios reales
+                        usuarios = usersList,
                         isLoading = false
                     )
                 }
@@ -77,17 +69,12 @@ class ProductViewModel(
         }
     }
 
-    // --- LÓGICA DE FILTRADO DE USUARIOS ---
     fun getFilteredUsers(): List<User> {
-        val currentUsers = _uiState.value.usuarios // Usamos la lista real del estado
+        val currentUsers = _uiState.value.usuarios
         if (userSearchQuery.isBlank()) return currentUsers
 
         return currentUsers.filter { user ->
-            // Usamos el operador Elvis (?:)
-            // Significa: "Si el nombre es nulo, usa un texto vacío"
             val nombreSeguro = user.nombre ?: ""
-
-            // "Si el email es nulo, prueba con el correo alternativo, y si también es nulo, usa vacío"
             val emailSeguro = user.email ?: user.correoAlternativo ?: ""
 
             nombreSeguro.contains(userSearchQuery, ignoreCase = true) ||
@@ -95,7 +82,6 @@ class ProductViewModel(
         }
     }
 
-    // ... (El resto de tus funciones de Productos: addProduct, updateProduct, deleteProduct, addCategory siguen igual) ...
 
     fun addProduct(
         name: String, price: Double, stock: Int,
@@ -149,7 +135,6 @@ class ProductViewModel(
         }
     }
 
-    // Categorias (Local temporal para UI)
     fun addCategory(nombre: String) {
         val nuevaCat = Categoria(id = System.currentTimeMillis(), nombre = nombre)
         _uiState.update { it.copy(categorias = it.categorias + nuevaCat) }
@@ -158,7 +143,6 @@ class ProductViewModel(
         _uiState.update { it.copy(categorias = it.categorias.filter { it.id != categoryId }) }
     }
 
-    // ... (Lógica del Carrito sigue igual) ...
     fun addToCart(product: Product) { _cart.add(product) }
     fun removeFromCart(product: Product) { _cart.removeIf { it.id == product.id } }
     fun removeOneFromCart(product: Product) {

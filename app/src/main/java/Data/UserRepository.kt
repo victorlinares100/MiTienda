@@ -7,11 +7,9 @@ import android.util.Log
 
 object UserRepository {
 
-    // Variable para guardar el usuario logueado en memoria (sesión)
     var currentUser: User? = null
         private set
 
-    // --- LOGIN ---
     suspend fun authenticate(email: String, passwordAttempt: String): Result<User> {
         return try {
             val request = LoginRequest(email, passwordAttempt)
@@ -46,9 +44,6 @@ object UserRepository {
         }
     }
 
-    // ... dentro de object UserRepository ...
-
-    // --- OBTENER TODOS LOS USUARIOS (ADMIN) ---
     suspend fun getAllUsers(): Result<List<User>> {
         return try {
             val response = RetrofitClient.apiService.getAllUsers()
@@ -63,7 +58,6 @@ object UserRepository {
         }
     }
 
-    // --- LOGOUT ---
     fun logout() {
         currentUser = null
     }

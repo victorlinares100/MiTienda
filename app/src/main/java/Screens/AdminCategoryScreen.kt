@@ -30,7 +30,6 @@ fun AdminCategoryScreen(
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        // --- 1. FORMULARIO PARA CREAR ---
         Card(
             modifier = Modifier.fillMaxWidth(),
             elevation = CardDefaults.cardElevation(4.dp),
@@ -90,7 +89,6 @@ fun AdminCategoryScreen(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // --- 2. LISTA DE CATEGORÍAS ---
         LazyColumn(
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {

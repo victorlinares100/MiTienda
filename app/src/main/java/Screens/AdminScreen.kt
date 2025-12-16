@@ -189,7 +189,6 @@ fun AdminProductScreen( // 1. CAMBIÉ EL NOMBRE AQUÍ
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                // --- TU BOTÓN DE IMAGEN ---
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Button(
                         onClick = { imagePickerLauncher.launch("image/*") },
@@ -223,7 +222,6 @@ fun AdminProductScreen( // 1. CAMBIÉ EL NOMBRE AQUÍ
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // --- TU BOTÓN DE GUARDAR ---
                 Button(
                     onClick = {
                         val price = priceText.toDoubleOrNull()
@@ -235,11 +233,9 @@ fun AdminProductScreen( // 1. CAMBIÉ EL NOMBRE AQUÍ
                             val imageFile = selectedImageUri?.let { FileUtils.getFileFromUri(context, it) }
 
                             if (editingProductId == null) {
-                                // CREAR
                                 viewModel.addProduct(name, price, stock, selectedCatId!!, selectedBrandId!!, selectedSizeId!!, imageFile)
                                 Toast.makeText(context, "Creando producto...", Toast.LENGTH_SHORT).show()
                             } else {
-                                // ACTUALIZAR
                                 viewModel.updateProduct(editingProductId!!, name, price, stock, selectedCatId!!, selectedBrandId!!, selectedSizeId!!, imageFile, currentImageUrl)
                                 Toast.makeText(context, "Actualizando...", Toast.LENGTH_SHORT).show()
                             }
@@ -266,7 +262,6 @@ fun AdminProductScreen( // 1. CAMBIÉ EL NOMBRE AQUÍ
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // --- TU LISTA DE PRODUCTOS ---
         if (uiState.isLoading && uiState.productList.isEmpty()) {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator(color = BluePrimary) }
         } else {
